@@ -28,8 +28,9 @@ namespace IRAPBase
         IQueryable<TEntity> Table { get; }
 
         int SaveChanges();
-    //    void Attach(TEntity entity);
-       // TEntity GetByKey(object key);
+
+       //void Attach(TEntity entity);
+       //TEntity GetByKey(object key);
         #endregion
     }
 

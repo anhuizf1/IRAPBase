@@ -11,7 +11,7 @@ namespace IRAPBase.Entities
     {
         public long PartitioningKey { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]//不自动增长
-        public long SysLogID { get; set; }
+        public int SysLogID { get; set; }
         public string Access_Token { get; set; }
         public string ClientID { get; set; }
         public byte LoginMode { get; set; }

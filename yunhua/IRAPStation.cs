@@ -16,7 +16,7 @@ namespace IRAPBase
         public int CommunityID { get { return _communityID; } set { _communityID = value; } }
         public IRAPStation()
         {
-            _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("name=IRAPContext"));
+            _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("IRAPContext"));
             _stations = _unitOfWork.Repository<StationEntity>();
         }
         //获取所有站点

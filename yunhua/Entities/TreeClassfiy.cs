@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IRAPBase.Entities;
+ 
 
-namespace IRAP.TreeEntities
+namespace IRAPBase.Entities
 {
-    public class TreeClassfiy:BaseEntity
+    public class TreeClassEntity:BaseEntity
     {
         public long PartitioningKey { get; set; }
         public int AttrChangeID { get; set; }
@@ -47,15 +48,46 @@ namespace IRAP.TreeEntities
 
 
     [Table("stb063")]
-    public class ETreeSysClass : TreeClassfiy
+    public class ETreeSysClass : TreeClassEntity
     {
 
     }
 
     [Table("stb064")]
-    public class ETreeBizClass : TreeClassfiy
+    public class ETreeBizClass : TreeClassEntity
     {
 
     }
 
+    //映射类
+    public class ETreeSysClassMap : EntityTypeConfiguration<ETreeSysClass>
+    {
+
+        public ETreeSysClassMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.LeafID });
+
+            Property(t => t.TransactNoLE).IsRequired();
+            Property(t => t.LeafID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+
+    public class ETreeBizClassMap : EntityTypeConfiguration<ETreeBizClass>
+    {
+
+        public ETreeBizClassMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.LeafID });
+
+            Property(t => t.TransactNoLE).IsRequired();
+            Property(t => t.LeafID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 }

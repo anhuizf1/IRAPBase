@@ -6,12 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.Entity.Infrastructure;
 using IRAPBase.Entities;
+using System.Data.Entity.Core.Objects;
 
 namespace IRAPBase
 {
     public interface IDbContext
     {
 
+        Database DataBase { get; }
+
+        ObjectContext GetObjectContext { get; }
         IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity;
 
         DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : BaseEntity;

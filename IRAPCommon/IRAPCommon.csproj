@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ReadConfig.cs" />
     <Compile Include="IRAPMD5.cs" />
     <Compile Include="IRAPSeqClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

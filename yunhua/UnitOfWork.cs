@@ -23,6 +23,7 @@ namespace IRAPBase
 
            public UnitOfWork()
            {
+
                context = new IRAPSqlDBContext();
            }
 
@@ -65,6 +66,7 @@ namespace IRAPBase
 
                if (!repositories.ContainsKey(type))
                {
+                  
                    var repositoryType = typeof(Repository<>);
                    var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), context);
                    repositories.TryAdd(type, repositoryInstance);

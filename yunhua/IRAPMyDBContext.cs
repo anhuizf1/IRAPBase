@@ -13,6 +13,7 @@ using System.Data.Entity.Infrastructure;
 using MySql.Data.EntityFramework;
 using System.Collections;
 using System.Configuration;
+using System.Data.Entity.Core.Objects;
 
 namespace IRAPBase
 {
@@ -30,6 +31,14 @@ namespace IRAPBase
     [DbConfigurationType(typeof(MySqlEFConfiguration))]
     public class IRAPMyDBContext : DbContext,IDbContext
     {
+        public bool AutoDetectChangesEnabled
+        {
+            get { return Configuration.AutoDetectChangesEnabled; }
+            set { Configuration.AutoDetectChangesEnabled = value; }
+        }
+        public Database DataBase { get { return this.Database; } }
+
+        public ObjectContext GetObjectContext { get { return ((IObjectContextAdapter)this).ObjectContext; } }
         public IRAPMyDBContext()
             : base("name=IRAPMyDBContext")
         {

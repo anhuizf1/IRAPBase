@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,5 +57,34 @@ namespace IRAPBase.Entities
 
     }
 
+    public class ETreeSysTranMap : EntityTypeConfiguration<ETreeSysTran>
+    {
 
+        public ETreeSysTranMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID });
+
+            Property(t => t.EntityID).IsRequired();
+            Property(t => t.Code).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+
+    public class ETreeBizTranMap : EntityTypeConfiguration<ETreeBizTran>
+    {
+
+        public ETreeBizTranMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID });
+
+            Property(t => t.EntityID).IsRequired();
+            Property(t => t.Code).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 }

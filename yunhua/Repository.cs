@@ -14,11 +14,20 @@ namespace IRAPBase
        
         private IDbSet<T> entities;
         string errorMessage = string.Empty;
+        public Repository(string context)
+        {
+            this.context = new IRAPSqlDBContext( context);
+        }
+        public Repository()
+        {
+            this.context = new IRAPSqlDBContext("IRAPContext");
+        }
         public Repository(IDbContext context)
         {
             this.context = context;
         }
-
+        public Database DataBase { get { return context.DataBase; } }
+       
         public T GetById(object id)
         {
             return this.Entities.Find(id);
@@ -112,7 +121,7 @@ namespace IRAPBase
             }
         }
 
-        private IDbSet<T> Entities
+        public IDbSet<T> Entities
         {
             get
             {

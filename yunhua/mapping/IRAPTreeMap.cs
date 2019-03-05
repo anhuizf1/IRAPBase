@@ -55,5 +55,18 @@ namespace IRAPBase.mapping
         }
     }
 
-    
+    public class ETreeBizLeafMap : EntityTypeConfiguration<ETreeBizLeaf>
+    {
+
+        public ETreeBizLeafMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.LeafID });
+
+            Property(t => t.NodeName).IsRequired();
+            Property(t => t.LeafID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 }

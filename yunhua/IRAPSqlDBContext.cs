@@ -11,6 +11,7 @@ using IRAPBase.Entities;
 using System.Data.Entity.Migrations;
 using System.Collections;
 using System.Configuration;
+using System.Data.Entity.Core.Objects;
 
 namespace IRAPBase
 {
@@ -23,11 +24,21 @@ namespace IRAPBase
     }
     public class IRAPSqlDBContext : DbContext, IDbContext
     {
-       // private Assembly extendAssembly = null;
+        // private Assembly extendAssembly = null;
         //public static DbModelBuilder _modelBuilder = null;
-        public IRAPSqlDBContext(string dbConnectionStr) : base($"name={dbConnectionStr}")
-      //  public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
+
+        public bool AutoDetectChangesEnabled
         {
+            get { return Configuration.AutoDetectChangesEnabled; }
+            set { Configuration.AutoDetectChangesEnabled = value; }
+        }
+        public Database DataBase { get { return this.Database; } }
+        public ObjectContext GetObjectContext { get { return ((IObjectContextAdapter)this).ObjectContext; } }
+        public IRAPSqlDBContext(string dbConnectionStr) : base($"name={dbConnectionStr}")
+        //  public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
+        {
+           
+          
             this.Database.Log = message => Console.Write(message);
             //生成简单的SQL
             Configuration.UseDatabaseNullSemantics = true;
@@ -38,14 +49,15 @@ namespace IRAPBase
         public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
         {
             this.Database.Log = message => Console.WriteLine(message);
+             
             //生成简单的SQL
             Configuration.UseDatabaseNullSemantics = true;
             //不生成数据库
             Database.SetInitializer<IRAPSqlDBContext>(null);
             //  Database.SetInitializer<IRAPDBContext>(new DropCreateDatabaseIfModelChanges<IRAPDBContext>());
         }
-     
-    protected override void OnModelCreating(DbModelBuilder modelBuilder)
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
 
             //自动执行配置
@@ -92,8 +104,8 @@ namespace IRAPBase
             //modelBuilder.Entity<TreeBase>().ToTable("stb058");
             //modelBuilder.Entity<TreeBase>().HasKey(k => k.LeafID);
             // modelBuilder.Entity<ModelTreeClassfiy>();
-             base.OnModelCreating(modelBuilder);
-           
+            base.OnModelCreating(modelBuilder);
+
         }
         //注册实体类
         public new IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
@@ -103,24 +115,25 @@ namespace IRAPBase
 
         public new DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : BaseEntity
         {
+
             return base.Entry(entity);
         }
 
-        
+
         public override int SaveChanges()
         {
-           
-           return  base.SaveChanges();
+
+            return base.SaveChanges();
         }
 
         public void RollBack()
         {
-        
+
             base.Database.CurrentTransaction.Rollback();
         }
         public void Dispose2()
         {
-              base.Dispose();
+            base.Dispose();
         }
     }
 

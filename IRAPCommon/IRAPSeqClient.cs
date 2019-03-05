@@ -11,6 +11,7 @@ namespace IRAPCommon
 
     public static class IRAPSeqClient
     {
+        //新增队列
         public static int AddSequence(string hostIP, string sequenceName, long initValue)
         {
             byte[] data = new byte[128];
@@ -48,7 +49,7 @@ namespace IRAPCommon
 
         }
 
-        
+        //重置序列
         public static int ResetSequence(string hostIP, string sequenceName, long startValue)
         {
             byte[] data = new byte[128];
@@ -85,9 +86,7 @@ namespace IRAPCommon
             }
         }
 
-
-
-        
+       //申请序列号
         public static long GetSequenceNo(string hostIP, string sequenceName, long count)
         {
             byte[] data = new byte[128];
@@ -116,7 +115,7 @@ namespace IRAPCommon
                 // Console.WriteLine("unable to connect to server");
                 // Console.WriteLine(e.ToString());
                 newclient.Close();
-                return -1;
+                throw e;
             }
             finally
             {

@@ -28,25 +28,28 @@ namespace IRAPBase
         #region 构造函数
         public IRAPUser( )
         {
+
             _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("IRAPContext"));
             _users = _unitOfWork.Repository<IRAPUserEntity>();
         }
 
         public IRAPUser(string userCode, long communityID)
         {
-           this._userCode = userCode;
+            this._userCode = userCode;
             this._communityID = communityID;
+
             _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("IRAPContext"));
             _users = _unitOfWork.Repository<IRAPUserEntity>();
-            IRAPUserEntity e = _users.Table.FirstOrDefault(r => r.UserCode == _userCode);
+            IRAPUserEntity e = _users.Table.FirstOrDefault(r => r.UserCode == _userCode&& r.PartitioningKey==PK);
             if (e != null)
             {
                 user = e;
             }
-        }
+        }  
         #endregion
 
         #region //获取机构清单
+    
         public BackLeafSetDTO GetAgencyList()
         {
             BackLeafSetDTO backRes = new BackLeafSetDTO();
@@ -119,114 +122,6 @@ namespace IRAPBase
 
         #endregion
 
-        #region //新增用户
-        public IRAPError AddUser(  string userCode,string userName , string passwd  ,string agencyNodeList, string roleNodeList )
-        {
-            IRAPError error = new IRAPError();
-            IRAPUserEntity e = new IRAPUserEntity();
-            try
-            {
-                e.PartitioningKey = PK;
-                e.UserCode = userCode;
-                e.UserName = userName;
-                e.EncryptedPWD = GetBinaryPassword(passwd);
-                e.AgencyNodeList = agencyNodeList;
-                e.RoleNodeList = roleNodeList;
-                e.RegistedTime = DateTime.Now;
-                e.ModifiedTime = DateTime.Now;
-                _users.Insert(e);
-                _unitOfWork.Commit();
-                error.ErrCode = 0;
-                error.ErrText = "增加用户成功！";
-                return error;
-            }
-            catch (Exception err)
-            {
-                if( err.InnerException.InnerException != null ){
-                    error.ErrText = "增加用户发生异常：" + err.InnerException.InnerException.Message;
-                }
-                else
-                {
-                    error.ErrText = "增加用户发生异常：" + err.Message;
-                }
-                error.ErrCode = 9999;
-                
-                return error;
-            }
-        }
-      
-
-        public IRAPError AddUser(IRAPUserEntity e)
-        {
-            IRAPError error = new IRAPError();
-            try
-            {
-                e.RegistedTime = DateTime.Now;
-                e.ModifiedTime = DateTime.Now;
-                
-                _users.Insert(e);
-                _unitOfWork.Commit();
-                error.ErrCode = 0;
-                error.ErrText = "增加用户成功！";
-                return error;
-            }
-            catch (Exception err)
-            {
-                if (err.InnerException.InnerException != null)
-                {
-                    error.ErrText = "增加用户发生异常：" + err.InnerException.InnerException.Message;
-                }
-                else
-                {
-                    error.ErrText = "增加用户发生异常：" + err.Message;
-                }
-                error.ErrCode = 9999;
-
-                return error;
-            }
-        }
-
-        #endregion
-
-        #region //修改用户
-
-        public IRAPError ModifyUser(IRAPUserEntity e)
-        {
-            IRAPError error = new IRAPError();
-            _users.Update(e);
-            _unitOfWork.Commit();
-            error.ErrCode = 0;
-            error.ErrText = "修改成功！";
-            return error;
-        }
-
-        #endregion
-
-        #region //删除指定用户
-        public IRAPError DeleteUser(long pk,string userCode)
-        {
-            IRAPError error = new IRAPError();
-            IRAPUserEntity e = _users.Table.FirstOrDefault(r => r.PartitioningKey == pk && r.UserCode == userCode);
-            if (e == null)
-            {
-                error.ErrCode = 9999;
-                error.ErrText = "用户代码不存在！"+ userCode;
-                return error;
-            }
-            _users.Delete(e ,false);
-            if (_unitOfWork.Commit() > 0){
-                error.ErrCode = 0;
-                error.ErrText = "删除成功！";
-            }else{
-                error.ErrCode = 91;
-                error.ErrText = "删除失败！";
-            }
-            return error;
-        }
-
-        #endregion
-
-
         #region //用户登录
         public BackLoginInfo Login(string clientID,string plainPWD,string veriCode, string stationID,string ipAddress,int agencyLeaf,int roleLeaf)
         {
@@ -262,14 +157,14 @@ namespace IRAPBase
                 }
                 //短信验证码是否有效
                 //申请登录标识
-                string seqServerIPAddress = ConfigurationManager.AppSettings["SeqServer"].ToString();
-                long sysLogID = IRAPSeqClient.GetSequenceNo(seqServerIPAddress, "NextSysLogID", 1);
+                IRAPSequence sequence = new IRAPSequence();
+                long sysLogID = sequence.GetSysLogID();
                 //登录
                 Repository<LoginEntity> loginRep = _unitOfWork.Repository<LoginEntity>();
                 LoginEntity loginEntity = new LoginEntity();
                 loginEntity.PartitioningKey = PK;
                 loginEntity.ClientID = clientID;
-                loginEntity.SysLogID = sysLogID;
+                loginEntity.SysLogID =(int) sysLogID;
                 loginEntity.UserCode = _userCode;
                 loginEntity.AgencyLeaf = agencyLeaf;
                 loginEntity.RoleLeaf = roleLeaf;
@@ -335,11 +230,6 @@ namespace IRAPBase
         #endregion
 
 
-        #region 批量业务接口(待修改,可以通过属性UserRepo扩展修改)
-        public IRAPError BatchImportUser()
-        {
-            return null;
-        }
-        #endregion 
+      
     }
 }
