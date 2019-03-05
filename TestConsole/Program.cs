@@ -31,12 +31,16 @@ namespace TestConsole
             Console.WriteLine(barcode);
             Console.WriteLine(conclusion);
 
-            IRAPTreeSet treeSet = new IRAPTreeSet(57280,1);
-            // NewTreeNodeDTO dto=  treeSet.NewNode(5615111, "Create", "创新研究所", 1.1F);
-            NewTreeNodeDTO dto = treeSet.NewLeaf(14263, "test", "alter", "中台开发人员");
-            Console.WriteLine(dto.ErrCode);
-            Console.WriteLine(dto.ErrText);
-            Console.WriteLine(dto.NewNodeID);
+            //IRAPTreeSet treeSet = new IRAPTreeSet(57280,1);
+            //// NewTreeNodeDTO dto=  treeSet.NewNode(5615111, "Create", "创新研究所", 1.1F);
+            //NewTreeNodeDTO dto = treeSet.NewLeaf(14263, "test", "alter", "中台开发人员");
+            //Console.WriteLine(dto.ErrCode);
+            //Console.WriteLine(dto.ErrText);
+            //Console.WriteLine(dto.NewNodeID);
+
+            IRAPSequence iraps = new IRAPSequence();
+            Console.WriteLine( "获取的SysLogID={0}", iraps.GetSysLogID() );
+           
             // Repository<IRAPUserEntity> rep = new Repository<IRAPUserEntity>("IRAPContext");
             // var us=  rep.Table.Where(r=>r.UserCode=="Admin").ToList();
 

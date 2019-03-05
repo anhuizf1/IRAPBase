@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,17 +9,34 @@ using System.Xml;
 
 namespace IRAPCommon
 {
-    public class ReadConfig
+
+    /// <summary>
+    /// 读取WebAPI服务的ServiceDlls目录下的IRAPORM.xml作为配置文件
+    /// 因为程序集热加载目前还没办法读取自己的配置文件（如果后续发现可以修改）
+    /// </summary>
+    public class DllReadConfig
     {
         private static Dictionary<string, string> _paramList = new Dictionary<string, string>();
-        public static void Read()
+        public  DllReadConfig()
         {
             if (_paramList.Count == 0)
             {
                 XmlDocument _xmlDoc = new XmlDocument();
                 string _assetXMLPath = AppDomain.CurrentDomain.BaseDirectory + @"ServiceDlls\IRAPORM.xml";
 
-                _xmlDoc.Load(_assetXMLPath);
+                if (!File.Exists(_assetXMLPath))
+                {
+                   foreach( string item in    ConfigurationManager.AppSettings.Keys)
+                    {
+                        _paramList.Add(item, ConfigurationManager.AppSettings[item].ToString());
+                    }
+                    return;
+                }
+                else
+                {
+                    _xmlDoc.Load(_assetXMLPath);
+                }
+               
 
                 XmlElement xmlContent = _xmlDoc.DocumentElement;
 
@@ -34,6 +53,6 @@ namespace IRAPCommon
             }
         }
 
-        public static Dictionary<string, string> Parameters { get { return _paramList; } }
+        public   Dictionary<string, string> Parameters { get { return _paramList; } }
     }
 }
