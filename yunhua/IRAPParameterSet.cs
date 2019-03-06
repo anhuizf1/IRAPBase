@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using IRAPBase.Entities;
 using IRAPBase.DTO;
 
@@ -52,9 +53,10 @@ namespace IRAPBase
                  join l in
                      dtNames
                          .Where(
-                             t => t.PartitioningKey == communityID * 10000 &&
-                             t.LanguageID == 30)
-                     on s.ParameterID equals l.NameID
+                             t => t.LanguageID == 30 &&
+                                (t.PartitioningKey == communityID * 10000 ||
+                                 t.PartitioningKey == 0))
+                     on s.ParameterNameID equals l.NameID
                  orderby s.ParameterID
                  select new IRAPParameterDTO()
                  {
@@ -91,9 +93,10 @@ namespace IRAPBase
                     names
                         .Table
                         .Where(
-                            t => t.PartitioningKey == communityID * 10000 &&
-                            t.LanguageID == 30)
-                    on s.ParameterID equals l.NameID
+                            t => t.LanguageID == 30 &&
+                                (t.PartitioningKey == communityID * 10000 ||
+                                 t.PartitioningKey == 0))
+                    on s.ParameterNameID equals l.NameID
                  orderby s.ParameterID
                  select new IRAPParameterDTO()
                  {
@@ -164,10 +167,9 @@ namespace IRAPBase
                 return rlt;
             }
 
-            int nameID =
-                 IRAPNamespaceSet.Instance.Add(
-                    communityID,
-                    src.ParameterName);
+            IIRAPNamespaceSet namespaceSet =
+                IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys);
+            int nameID = namespaceSet.Add(src.ParameterName);
 
             IRAPParameterEntity entity = new IRAPParameterEntity()
             {
