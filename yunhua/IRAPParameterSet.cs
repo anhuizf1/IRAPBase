@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using IRAPBase.Entities;
 using IRAPBase.DTO;
 
@@ -166,7 +165,7 @@ namespace IRAPBase
             }
 
             int nameID =
-                IRAPNamespaceSet.Instance.Add(
+                 IRAPNamespaceSet.Instance.Add(
                     communityID,
                     src.ParameterName);
 

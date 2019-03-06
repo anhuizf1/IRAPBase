@@ -73,6 +73,8 @@
     <Compile Include="DTO\IRAPUserDTO.cs" />
     <Compile Include="DTO\SystemDTO.cs" />
     <Compile Include="Entities\EGrant.cs" />
+    <Compile Include="Entities\IRAPParameterEntity.cs" />
+    <Compile Include="Entities\SystemExEntity.cs" />
     <Compile Include="Entities\TempFactEntity.cs" />
     <Compile Include="Entities\TransactEntity.cs" />
     <Compile Include="Entities\TreeCorrEntity.cs" />
