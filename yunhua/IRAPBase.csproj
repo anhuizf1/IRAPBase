@@ -66,14 +66,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DBContextFactory.cs" />
     <Compile Include="DTO\BizDTO.cs" />
+    <Compile Include="DTO\IRAPParameterDTO.cs" />
     <Compile Include="DTO\IRAPTreeDTO.cs" />
     <Compile Include="DTO\IRAPUserDTO.cs" />
     <Compile Include="Entities\EGrant.cs" />
+    <Compile Include="Entities\IRAPParameterEntity.cs" />
     <Compile Include="Entities\TempFactEntity.cs" />
     <Compile Include="Entities\TransactEntity.cs" />
     <Compile Include="Entities\TreeCorrEntity.cs" />
+    <Compile Include="Enums\NamespaceType.cs" />
+    <Compile Include="IRAPNamespaceSet.cs" />
     <Compile Include="IRAPOperBase.cs" />
+    <Compile Include="IRAPParameterSet.cs" />
     <Compile Include="IRAPSequence.cs" />
     <Compile Include="IRAPTree.cs" />
     <Compile Include="Entities\LoginEntity.cs" />
