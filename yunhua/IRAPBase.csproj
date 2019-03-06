@@ -76,6 +76,7 @@
     <Compile Include="Entities\TempFactEntity.cs" />
     <Compile Include="Entities\TransactEntity.cs" />
     <Compile Include="Entities\TreeCorrEntity.cs" />
+    <Compile Include="IRAPNamespaceSet.cs" />
     <Compile Include="IRAPOperBase.cs" />
     <Compile Include="IRAPParameterSet.cs" />
     <Compile Include="IRAPSequence.cs" />
