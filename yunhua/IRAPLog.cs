@@ -34,5 +34,32 @@ namespace IRAPBase
                         r.SysLogID == sysLogID)
                     .FirstOrDefault();
         }
+
+        public LoginEntity GetLogIDByToken(string access_token )
+        {
+            try
+            {
+                LoginEntity e = _loginLog.FirstOrDefault(r => r.Access_Token == access_token);
+
+                return e;
+            }
+            catch(Exception err)
+            {
+                return null;
+            }
+            
+        }
+        public int GetCommunityID (string access_token)
+        {
+            LoginEntity e = GetLogIDByToken(access_token);
+            if (e != null)
+            {
+                return (int)e.PartitioningKey / 10000;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 }

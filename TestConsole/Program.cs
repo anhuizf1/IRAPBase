@@ -38,9 +38,13 @@ namespace TestConsole
             //Console.WriteLine(dto.ErrText);
             //Console.WriteLine(dto.NewNodeID);
 
-            IRAPSequence iraps = new IRAPSequence();
-            Console.WriteLine( "获取的SysLogID={0}", iraps.GetSysLogID() );
-           
+            IRAPSystem system = new IRAPSystem();
+         
+            var list= system.GetSystemList();
+            foreach (var r in list)
+            {
+                Console.WriteLine("{0} - {1}", r.SystemID,r.SystemName);
+            }
             // Repository<IRAPUserEntity> rep = new Repository<IRAPUserEntity>("IRAPContext");
             // var us=  rep.Table.Where(r=>r.UserCode=="Admin").ToList();
 

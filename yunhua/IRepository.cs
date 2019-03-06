@@ -21,7 +21,7 @@ namespace IRAPBase
 
        // int Delete(TEntity entity);
 
-        void Delete(TEntity entity, bool isAttach = true);
+        void Delete(TEntity entity, bool isAttach = false);
 
         void Update(TEntity entity);
 
