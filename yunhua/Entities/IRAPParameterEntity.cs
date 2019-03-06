@@ -12,7 +12,7 @@ namespace IRAPBase.Entities
     {
         public long PartitioningKey { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public short ParameterID { get; set; }
+        public byte ParameterID { get; set; }
         public int ParameterNameID { get; set; }
         public int ParameterValue { get; set; }
         public string ParameterValueStr { get; set; }

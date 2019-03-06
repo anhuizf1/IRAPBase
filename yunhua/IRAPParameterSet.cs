@@ -13,10 +13,16 @@ namespace IRAPBase
     {
         private Repository<IRAPParameterEntity> irapParams = null;
         private Repository<SysNameSpaceEntity> names = null;
+        private IDbContext db = null;
 
         public IRAPParameterSet()
         {
-            IDbContext db = new IRAPSqlDBContext("IRAPContext");
+            try
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPContext");
+            }
+            catch (Exception error) { throw error; }
+
             irapParams = new Repository<IRAPParameterEntity>(db);
             names = new Repository<SysNameSpaceEntity>(db);
         }
@@ -146,11 +152,13 @@ namespace IRAPBase
             {
                 if (error.InnerException.InnerException != null)
                 {
-                    rlt.ErrText = "增加用户发生异常：" + error.InnerException.InnerException.Message;
+                    rlt.ErrText = 
+                        $"获取登录信息发生异常：" +
+                        $"{error.InnerException.InnerException.Message}";
                 }
                 else
                 {
-                    rlt.ErrText = "增加用户发生异常：" + error.Message;
+                    rlt.ErrText = $"获取登录信息发生异常：{error.Message}";
                 }
                 rlt.ErrCode = 9999;
 
@@ -172,7 +180,30 @@ namespace IRAPBase
                 UpdatedBy = loginInfo.UserCode,
                 TimeUpdated = DateTime.Now,
             };
-            irapParams.Insert(entity);
+
+            try
+            {
+                irapParams.Insert(entity);
+                irapParams.SaveChanges();
+                rlt.ErrCode = 0;
+                rlt.ErrText = "参数新增成功";
+            }
+            catch (Exception error)
+            {
+                rlt.ErrCode = 9999;
+                if (error.InnerException.InnerException != null)
+                {
+                    rlt.ErrText =
+                        $"新增参数发生异常：" +
+                        $"{error.InnerException.InnerException.Message}";
+                }
+                else
+                {
+                    rlt.ErrText = $"新增参数发生异常：{error.Message}";
+                }
+            }
+
+            return rlt;
         }
     }
 }

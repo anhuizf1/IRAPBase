@@ -9,7 +9,7 @@ namespace IRAPBase.DTO
     public class IRAPParameterDTO
     {
         public long PartitioningKey { get; set; }
-        public short ParameterID { get; set; }
+        public byte ParameterID { get; set; }
         public int ParameterNameID { get; set; }
         public string ParameterName { get; set; }
         public int ParameterValue { get; set; }
