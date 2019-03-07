@@ -45,9 +45,11 @@ namespace IRAPBase
         private int _treeID = 0;
         private int _communityID;
         //private string dbConnectStr;
-         
-        private  IQueryable<TreeNodeEntity> nodes;
+
+        private IQueryable<TreeNodeEntity> nodes;
         private IQueryable<TreeLeafEntity> leaves;
+        private object TreeLeafRepo = null;
+        private object TreeNodeRepo = null;
         private IDbContext context = null;
         private List<IRAPTreeNodes> accessibleNodes;
         public int TreeID { get { return _treeID; } }
@@ -66,12 +68,15 @@ namespace IRAPBase
                 dbConnectStr = "IRAPMDMContext";
             }
             accessibleNodes = new List<IRAPTreeNodes>();
-
             context = new IRAPSqlDBContext(dbConnectStr);
             if (_treeID <= 100)
             {
-                nodes = new Repository<ETreeSysDir>(context).Table;
-                leaves = new Repository<ETreeSysLeaf>(context).Table;
+                TreeNodeRepo = new Repository<ETreeSysDir>(context);
+
+               //  s = new Repository<ETreeSysDir>(context)
+                nodes = ((Repository<ETreeSysDir>)TreeNodeRepo).Table;
+                TreeLeafRepo = new Repository<ETreeSysLeaf>(context);
+                leaves =  ((Repository<ETreeSysLeaf>)TreeLeafRepo).Table;
             }
             else
             {
@@ -85,7 +90,7 @@ namespace IRAPBase
         //1.(标识)获取叶子集//叶子
         public IQueryable<TreeLeafEntity> LeafEntities { get { return leaves; } }
         //2.(标识/目录)获取节点集合 
-        public IQueryable<TreeNodeEntity>  NodeEntities { get { return nodes; } }
+        public IQueryable<TreeNodeEntity> NodeEntities { get { return nodes; } }
 
         //3 检索属性
         //4分类属性
@@ -97,7 +102,7 @@ namespace IRAPBase
 
         #endregion
         //7.一般属性
-        public IQueryable<T> GenAttr<T> () where T : BaseEntity
+        public IQueryable<T> GenAttr<T>() where T : BaseEntity
         {
             return new Repository<T>(context).Table;
         }
@@ -114,8 +119,8 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPTreeNodes TreeView()
         {
-            
-         
+
+
             long[] pkArray = { PK + _treeID, _treeID };
             var list = nodes.Where(r => r.TreeID == _treeID && pkArray.Contains(r.PartitioningKey)).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
             var list2 = leaves.Where(r => r.TreeID == _treeID && pkArray.Contains(r.PartitioningKey)).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
@@ -171,15 +176,15 @@ namespace IRAPBase
         // 获取子树结点集（不带权限）
         public List<TreeNodeEntity> SubTreeNodes(int nodeID)
         {
-            return nodes.Where(r=>r.Father==nodeID).ToList();
+            return nodes.Where(r => r.Father == nodeID).ToList();
         }
 
         //获取 子树叶集（不带权限） 
         public List<TreeLeafEntity> SubTreeLeaves(int nodeID)
         {
-            return  leaves.Where(r=>r.Father==nodeID).ToList();
+            return leaves.Where(r => r.Father == nodeID).ToList();
         }
-      
+
         #endregion
 
         #region 根据权限呈现树的代码
@@ -328,22 +333,22 @@ namespace IRAPBase
 
         #endregion
 
- 
+
         //新增节点
-        public NewTreeNodeDTO NewNode( int fatherNode ,   string nodeCode,string nodeName, float udfOrdinal    )
+        public NewTreeNodeDTO NewNode(int fatherNode, string nodeCode, string nodeName, float udfOrdinal = 1F)
         {
             NewTreeNodeDTO res = new NewTreeNodeDTO();
             try
             {
-                TreeNodeEntity father = nodes.FirstOrDefault(r => r.NodeID == fatherNode);
-               
+                TreeNodeEntity father = nodes.FirstOrDefault(r => r.NodeID == fatherNode && r.PartitioningKey == PK + _treeID);
+
                 if (father == null)
                 {
                     res.ErrCode = 22;
                     res.ErrText = $"结点标识：{fatherNode}不存在！";
                     return res;
                 }
-               
+
                 IRAPSequence sequenceServer = new IRAPSequence();
                 if (_treeID <= 100)
                 {
@@ -361,15 +366,15 @@ namespace IRAPBase
                     e.CSTRoot = father.CSTRoot;
                     e.Father = fatherNode;
                     Repository<ETreeSysDir> nodes = new Repository<ETreeSysDir>(context);
-                    SequenceValueDTO dto=   sequenceServer.GetSequence("NextSysNodeID", 1);
+                    SequenceValueDTO dto = sequenceServer.GetSequence("NextSysNodeID", 1);
                     if (dto.ErrCode != 0)
                     {
                         res.ErrCode = dto.ErrCode;
                         res.ErrText = dto.ErrText;
                         return res;
                     }
-                    e.NodeID =(int) dto.SequenceValue;
-                    nodes.Insert( e);
+                    e.NodeID = (int)dto.SequenceValue;
+                    nodes.Insert(e);
                     res.NewNodeID = e.NodeID;
                     nodes.SaveChanges();
                 }
@@ -398,13 +403,13 @@ namespace IRAPBase
                     }
                     e.NodeID = (int)dto.SequenceValue;
                     res.NewNodeID = e.NodeID;
-                    nodes.Insert( e);
+                    nodes.Insert(e);
                     nodes.SaveChanges();
                 }
 
                 res.ErrCode = 0;
                 res.ErrText = "结点创建成功！";
-               
+
                 return res;
             }
             catch (Exception err)
@@ -415,13 +420,13 @@ namespace IRAPBase
             }
         }
         //新增叶子
-        public NewTreeNodeDTO NewLeaf(int fatherNode, string nodeCode,  string alterNateCode, string nodeName, float udfOrdinal=1F)
+        public NewTreeNodeDTO NewLeaf(int fatherNode, string nodeCode, string alterNateCode, string nodeName, float udfOrdinal = 1F)
         {
 
             NewTreeNodeDTO res = new NewTreeNodeDTO();
             try
             {
-                TreeNodeEntity father = nodes.FirstOrDefault(r => r.NodeID == fatherNode);
+                TreeNodeEntity father = nodes.FirstOrDefault(r => r.NodeID == fatherNode && r.PartitioningKey == PK + _treeID);
 
                 if (father == null)
                 {
@@ -505,26 +510,167 @@ namespace IRAPBase
             }
         }
         //删除结点 
-        public IRAPError DeleteNode( int nodeID)
+        public IRAPError DeleteNode(int nodeType, int nodeID)
         {
-            return null;
+            IRAPError error = new IRAPError();
+            try
+            {
+                if (nodeType == 3)
+                {
+                    if (_treeID <= 100)
+                    {
+                        Repository<ETreeSysDir> nodes = new Repository<ETreeSysDir>(context);
+                        ETreeSysDir thisNode = nodes.Table.FirstOrDefault(r => r.NodeID == nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                    else
+                    {
+                        Repository<ETreeBizDir> nodes = new Repository<ETreeBizDir>(context);
+                        ETreeBizDir thisNode = nodes.Table.FirstOrDefault(r => r.NodeID == nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                }
+                else if (nodeType == 4)
+                {
+                    if (_treeID <= 100)
+                    {
+                        Repository<ETreeSysLeaf> nodes = new Repository<ETreeSysLeaf>(context);
+                        ETreeSysLeaf thisNode = nodes.Table.FirstOrDefault(r => r.LeafID == -nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                    else
+                    {
+                        Repository<ETreeBizLeaf> nodes = new Repository<ETreeBizLeaf>(context);
+                        ETreeBizLeaf thisNode = nodes.Table.FirstOrDefault(r => r.LeafID == -nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                }
+                else
+                {
+                    error.ErrCode = 91;
+                    error.ErrText = "不支持的NodeType类型！";
+                    return error;
+                }
+
+                error.ErrCode = 0;
+                error.ErrText = "删除结点成功！";
+                return error;
+            }
+            catch (Exception err)
+            {
+                error.ErrCode = 9999;
+                error.ErrText = $"删除结点失败：{err.Message}";
+                return error;
+            }
+
+
         }
-        //删除叶子
-        public IRAPError DeleteLeaf(int  leafID)
-        {
-            return null;
-        }
+
         //修改结点
-        public IRAPError ModifyNode()
+        public IRAPError ModifyNode(int nodeType,int nodeID,string nodeCode,string nodeName,string alternateCode,float udfOrdinal=1F )
         {
-            return null;
+            IRAPError error = new IRAPError();
+            try
+            {
+                if (nodeType == 3)
+                {
+                    if (_treeID <= 100)
+                    {
+                        Repository<ETreeSysDir> nodes = new Repository<ETreeSysDir>(context);
+                        ETreeSysDir thisNode = nodes.Table.FirstOrDefault(r => r.NodeID == nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                    else
+                    {
+                        Repository<ETreeBizDir> nodes = new Repository<ETreeBizDir>(context);
+                        ETreeBizDir thisNode = nodes.Table.FirstOrDefault(r => r.NodeID == nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                }
+                else if (nodeType == 4)
+                {
+                    if (_treeID <= 100)
+                    {
+                        Repository<ETreeSysLeaf> nodes = new Repository<ETreeSysLeaf>(context);
+                        ETreeSysLeaf thisNode = nodes.Table.FirstOrDefault(r => r.LeafID == -nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                    else
+                    {
+                        Repository<ETreeBizLeaf> nodes = new Repository<ETreeBizLeaf>(context);
+                        ETreeBizLeaf thisNode = nodes.Table.FirstOrDefault(r => r.LeafID == -nodeID && r.PartitioningKey == PK + _treeID);
+                        if (thisNode == null)
+                        {
+                            error.ErrCode = 22;
+                            error.ErrText = $"结点标识：{nodeID}不存在！";
+                            return error;
+                        }
+                        nodes.Delete(thisNode);
+                    }
+                }
+                else
+                {
+                    error.ErrCode = 91;
+                    error.ErrText = "不支持的NodeType类型！";
+                    return error;
+                }
+
+                error.ErrCode = 0;
+                error.ErrText = "删除结点成功！";
+                return error;
+            }
+            catch (Exception err)
+            {
+                error.ErrCode = 9999;
+                error.ErrText = $"删除结点失败：{err.Message}";
+                return error;
+            }
+
         }
-        //修改叶子
-        public IRAPError ModifyLeaf()
-        {
-            return null;
-        }
-       
-         
+
+
+
     }
 }
