@@ -40,13 +40,56 @@ namespace IRAPBase
 
             _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("IRAPContext"));
             _users = _unitOfWork.Repository<IRAPUserEntity>();
-            IRAPUserEntity e = _users.Table.FirstOrDefault(r => r.UserCode == _userCode && r.PartitioningKey == PK);
+            IRAPUserEntity e = _users.Entities.FirstOrDefault(r => r.UserCode == _userCode && r.PartitioningKey == PK);
             if (e != null)
             {
                 user = e;
             }
         }
+
         #endregion
+
+        /// <summary>
+        /// 修改用户
+        /// </summary>
+        /// <returns></returns>
+
+        public IRAPError Modify()
+        {
+         
+            if (user == null)
+            {
+                return new IRAPError(22, $"用户名{_userCode}无效！");
+            }
+            _users.Update(user);
+           int resInt=  _users.SaveChanges();
+            if (resInt > 0)
+            {
+                return new IRAPError(0, "修改成功！");
+            }
+            else
+            {
+                return new IRAPError(22, "修改失败，属性未发生变化无需修改！");
+            }
+        }
+
+        public IRAPError Delete()
+        {
+            if (user == null)
+            {
+                return new IRAPError(221, "用户不存在！");
+            }
+            _users.Delete(user);
+            int resInt = _users.SaveChanges();
+            if (resInt > 0)
+            {
+                return new IRAPError(0, "删除成功！");
+            }
+            else
+            {
+                return new IRAPError(22, "删除失败！");
+            }
+        }
 
         #region //获取机构清单
 

@@ -16,7 +16,7 @@ namespace IRAPBase
 
         public long PK { get { return _communityID * 10000L; } }
 
-        public Repository<IRAPUserEntity> Repository { get { return _users; } }
+        public Repository<IRAPUserEntity> UserRep { get { return _users; } }
 
         public IRAPUserSet()
         {
