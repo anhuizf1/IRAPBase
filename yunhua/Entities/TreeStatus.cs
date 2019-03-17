@@ -10,14 +10,14 @@ namespace IRAPBase.Entities
 {
     public class TreeStatus : BaseEntity
     {
-
         public long PartitioningKey { get; set; }
-        public Int16 TreeID { get; set; }
+        // public Int16 TreeID { get; set; }
         public int EntityID { get; set; }
-
         public int Ordinal { get; set; }
         public int T5LeafID { get; set; }
         public byte StatusValue { get; set; }
+        public int ColorRGBValue { get; set; }
+        public long TransitCtrlValue { get; set; }
     }
 
     [Table("stb177")]
@@ -32,6 +32,17 @@ namespace IRAPBase.Entities
 
     }
 
+    [Table("stb177_H")]
+    public class ETreeSysStatus_H : TreeStatus
+    {
+
+    }
+
+    [Table("stb178_H")]
+    public class ETreeBizStatus_H : TreeStatus
+    {
+
+    }
     public class ETreeSysStatusMap : EntityTypeConfiguration<ETreeSysStatus>
     {
 
@@ -39,7 +50,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey,  t.EntityID,t.Ordinal });
+            HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
 
             Property(t => t.StatusValue).IsRequired();
             Property(t => t.T5LeafID).IsRequired();
@@ -57,6 +68,38 @@ namespace IRAPBase.Entities
             // ToTable("stb006");
             HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
 
+            Property(t => t.StatusValue).IsRequired();
+            Property(t => t.T5LeafID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+
+    //历史表映射
+    public class ETreeSysStatus_HMap : EntityTypeConfiguration<ETreeSysStatus_H>
+    {
+
+        public ETreeSysStatus_HMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
+
+            Property(t => t.StatusValue).IsRequired();
+            Property(t => t.T5LeafID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+
+    public class ETreeBizStatus_HMap : EntityTypeConfiguration<ETreeBizStatus_H>
+    {
+
+        public ETreeBizStatus_HMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
             Property(t => t.StatusValue).IsRequired();
             Property(t => t.T5LeafID).IsRequired();
             //   Property(p => p.LanguageID).HasColumnType("smallint");

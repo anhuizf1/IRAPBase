@@ -45,6 +45,7 @@ namespace IRAPBase
             }
             catch(Exception err)
             {
+                Console.WriteLine(err.Message);
                 return null;
             }
             

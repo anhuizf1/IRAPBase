@@ -8,6 +8,25 @@ using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
+    public class TreeTransient : BaseEntity
+    {
+        public TreeTransient()
+        {
+            UnitOfMeasure = "";
+        }
+        public long PartitioningKey { get; set; }
+        //public int TreeID { get; set; }
+        public int EntityID { get; set; }
+        public byte Ordinal { get; set; }
+
+        public int RowChecksum { get; set; }
+        public int VersionGE { get; set; }
+        public int VersionLE { get; set; }
+        public long AttrValue { get; set; }
+       public Int16  Scale { get; set; }
+       public string  UnitOfMeasure { get; set; }
+    }
+    /*老的结构
     public class TreeTransient:BaseEntity
     {
         public long PartitioningKey { get; set; }
@@ -44,19 +63,34 @@ namespace IRAPBase.Entities
         public long Statistic15 { get; set; }
         public long Statistic16 { get; set; }
     }
-
-    [Table("stb054")]
+    */
+    [Table("stb187")]
     public class ETreeSysTran : TreeTransient
     {
 
     }
 
-    [Table("stb060")]
+    [Table("stb188")]
     public class ETreeBizTran : TreeTransient
     {
 
     }
 
+    [Table("stb187_H")]
+    public class ETreeSysTran_H : TreeTransient
+    {
+
+    }
+
+    [Table("stb188_H")]
+    public class ETreeBizTran_H : TreeTransient
+    {
+
+    }
+
+    /// <summary>
+    /// 系统瞬态属性映射
+    /// </summary>
     public class ETreeSysTranMap : EntityTypeConfiguration<ETreeSysTran>
     {
 
@@ -64,15 +98,34 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.EntityID });
+            HasKey(t => new { t.PartitioningKey, t.EntityID ,t.Ordinal});
 
             Property(t => t.EntityID).IsRequired();
-            Property(t => t.Code).IsRequired();
+            Property(t => t.Ordinal).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+    /// <summary>
+    /// 系统瞬态属性历史 映射
+    /// </summary>
+    public class ETreeSysTran_HMap : EntityTypeConfiguration<ETreeSysTran_H>
+    {
+
+        public ETreeSysTran_HMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
+
+            Property(t => t.EntityID).IsRequired();
+            Property(t => t.Ordinal).IsRequired();
             //   Property(p => p.LanguageID).HasColumnType("smallint");
         }
     }
 
-
+    /// <summary>
+    /// 业务瞬态属性映射
+    /// </summary>
     public class ETreeBizTranMap : EntityTypeConfiguration<ETreeBizTran>
     {
 
@@ -80,10 +133,29 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.EntityID });
+            HasKey(t => new { t.PartitioningKey, t.EntityID,t.Ordinal });
 
             Property(t => t.EntityID).IsRequired();
-            Property(t => t.Code).IsRequired();
+            Property(t => t.Ordinal).IsRequired();
+            Property(t => t.AttrValue).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+    /// <summary>
+    /// 业务瞬态属性历史 映射
+    /// </summary>
+    public class ETreeBizTran_HMap : EntityTypeConfiguration<ETreeBizTran_H>
+    {
+        public ETreeBizTran_HMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.EntityID, t.Ordinal });
+
+            Property(t => t.EntityID).IsRequired();
+            Property(t => t.Ordinal).IsRequired();
+            Property(t => t.AttrValue).IsRequired();
             //   Property(p => p.LanguageID).HasColumnType("smallint");
         }
     }

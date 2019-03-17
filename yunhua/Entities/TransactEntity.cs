@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace IRAPBase.Entities
 {
     [Table("stb010")]
-    public class TransactEntity
+    public class TransactEntity:BaseEntity
     {
         public long TransactNo { get; set; }
         public long PartitioningKey { get; set; }
