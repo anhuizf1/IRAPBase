@@ -9,12 +9,18 @@ using IRAPBase.DTO;
 
 namespace IRAPBase
 {
+    /// <summary>
+    /// IRAP 参数集
+    /// </summary>
     public class IRAPParameterSet
     {
         private Repository<IRAPParameterEntity> irapParams = null;
         private Repository<SysNameSpaceEntity> names = null;
         private IDbContext db = null;
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public IRAPParameterSet()
         {
             try
@@ -147,6 +153,7 @@ namespace IRAPBase
                     loginInfo = new LoginEntity()
                     {
                         UserCode = "Unknown",
+                        LanguageID = 30,
                     };
                 }
             }
@@ -169,38 +176,46 @@ namespace IRAPBase
 
             IIRAPNamespaceSet namespaceSet =
                 IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys);
-            int nameID = namespaceSet.Add(src.ParameterName);
-
-            IRAPParameterEntity entity = new IRAPParameterEntity()
+            int nameID = 0;
+            rlt = 
+                namespaceSet.Add(
+                    communityID, 
+                    src.ParameterName, 
+                    loginInfo.LanguageID,
+                    out nameID);
+            if (rlt.ErrCode == 0)
             {
-                ParameterID = src.ParameterID,
-                ParameterNameID = nameID,
-                PartitioningKey = communityID * 10000,
-                ParameterValue = src.ParameterValue,
-                ParameterValueStr = src.ParameterValueStr,
-                UpdatedBy = loginInfo.UserCode,
-                TimeUpdated = DateTime.Now,
-            };
-
-            try
-            {
-                irapParams.Insert(entity);
-                irapParams.SaveChanges();
-                rlt.ErrCode = 0;
-                rlt.ErrText = "参数新增成功";
-            }
-            catch (Exception error)
-            {
-                rlt.ErrCode = 9999;
-                if (error.InnerException.InnerException != null)
+                IRAPParameterEntity entity = new IRAPParameterEntity()
                 {
-                    rlt.ErrText =
-                        $"新增参数发生异常：" +
-                        $"{error.InnerException.InnerException.Message}";
+                    ParameterID = src.ParameterID,
+                    ParameterNameID = nameID,
+                    PartitioningKey = communityID * 10000,
+                    ParameterValue = src.ParameterValue,
+                    ParameterValueStr = src.ParameterValueStr,
+                    UpdatedBy = loginInfo.UserCode,
+                    TimeUpdated = DateTime.Now,
+                };
+
+                try
+                {
+                    irapParams.Insert(entity);
+                    irapParams.SaveChanges();
+                    rlt.ErrCode = 0;
+                    rlt.ErrText = "参数新增成功";
                 }
-                else
+                catch (Exception error)
                 {
-                    rlt.ErrText = $"新增参数发生异常：{error.Message}";
+                    rlt.ErrCode = 9999;
+                    if (error.InnerException.InnerException != null)
+                    {
+                        rlt.ErrText =
+                            $"新增参数发生异常：" +
+                            $"{error.InnerException.InnerException.Message}";
+                    }
+                    else
+                    {
+                        rlt.ErrText = $"新增参数发生异常：{error.Message}";
+                    }
                 }
             }
 
