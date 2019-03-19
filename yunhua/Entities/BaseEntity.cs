@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
+    /// <summary>
+    /// 所有数据库实体的基类
+    /// </summary>
     public abstract class BaseEntity
     {
 

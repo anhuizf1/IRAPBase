@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
-    public class FactEntity
+    [Table("TempFact_OLTP")]
+    public class FactEntity:BaseEntity
     {
         public long FactID { get; set; }
         public long PartitioningKey { get; set; }
@@ -55,4 +58,17 @@ namespace IRAPBase.Entities
         public string Remark { get; set; }
         public long LinkedFactID { get; set; }
     }
+
+    public class FactEntityMap : EntityTypeConfiguration<FactEntity>
+    {
+        public FactEntityMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey,t.FactID });
+            Property(t => t.TransactNo).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
 }

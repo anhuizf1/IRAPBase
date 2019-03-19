@@ -107,7 +107,10 @@ namespace IRAPBase
             return base.Entry(entity);
         }
 
-       
+       public DbSet GetSet(Type t)
+        {
+            return Set(t);
+        }
 
         public override int SaveChanges()
         {

@@ -116,10 +116,12 @@ namespace IRAPBase
             backRes.Rows = new List<LeafDTO>();
             foreach (var row in agencyList)
             {
-                LeafDTO d = new LeafDTO();
-                d.Leaf = row.LeafID;
-                d.Code = row.Code;
-                d.Name = row.NodeName;
+                LeafDTO d = new LeafDTO
+                {
+                    Leaf = row.LeafID,
+                    Code = row.Code,
+                    Name = row.NodeName
+                };
                 backRes.Rows.Add(d);
             }
             backRes.ErrCode = 0;
@@ -152,10 +154,12 @@ namespace IRAPBase
             backRes.Rows = new List<LeafDTO>();
             foreach (var row in agencyList)
             {
-                LeafDTO d = new LeafDTO();
-                d.Leaf = row.LeafID;
-                d.Code = row.Code;
-                d.Name = row.NodeName;
+                LeafDTO d = new LeafDTO
+                {
+                    Leaf = row.LeafID,
+                    Code = row.Code,
+                    Name = row.NodeName
+                };
                 backRes.Rows.Add(d);
             }
             backRes.ErrCode = 0;
@@ -168,13 +172,15 @@ namespace IRAPBase
         #region //用户登录
         public BackLoginInfo Login(string clientID, string plainPWD, string veriCode, string stationID, string ipAddress, int agencyLeaf, int roleLeaf)
         {
-            BackLoginInfo backRes = new BackLoginInfo();
-            backRes.UserName = user.UserName;
-            backRes.LanguageID = user.LanguageID;
-            backRes.NickName = user.UserEnglishName;
-            backRes.MPhoneNo = user.MPhoneNo;
-            backRes.OPhoneNo = user.OPhoneNo;
-            backRes.HPhoneNo = user.HPhoneNo;
+            BackLoginInfo backRes = new BackLoginInfo
+            {
+                UserName = user.UserName,
+                LanguageID = user.LanguageID,
+                NickName = user.UserEnglishName,
+                MPhoneNo = user.MPhoneNo,
+                OPhoneNo = user.OPhoneNo,
+                HPhoneNo = user.HPhoneNo
+            };
             try
             {
                 //验证密码
@@ -200,8 +206,8 @@ namespace IRAPBase
                 }
                 //短信验证码是否有效
                 //申请登录标识
-                IRAPSequence sequence = new IRAPSequence();
-                long sysLogID = sequence.GetSysLogID();
+               
+                long sysLogID = IRAPSequence.GetSysLogID();
                 //登录
                 Repository<LoginEntity> loginRep = _unitOfWork.Repository<LoginEntity>();
                 LoginEntity loginEntity = new LoginEntity();

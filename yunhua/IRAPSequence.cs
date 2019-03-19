@@ -14,12 +14,12 @@ namespace IRAPBase
     /// <summary>
     ///  序列管理类：包括申请、新增、重置序列
     /// </summary>
-    public class IRAPSequence
+    public   class  IRAPSequence
     {
-        private string seqServerIPAddress = string.Empty;
+        private static string seqServerIPAddress = string.Empty;
 
 
-        public IRAPSequence()
+         static IRAPSequence()
         {
             //seqServerIPAddress = "192.168.57.217";
             //读不到配置文件，所以下面注释掉
@@ -35,7 +35,7 @@ namespace IRAPBase
         /// 获取交易号
         /// </summary>
         /// <returns>long</returns>
-        public long GetTransactNo()
+        public static long GetTransactNo()
         {
             long transactNo = IRAPSeqClient.GetSequenceNo(seqServerIPAddress, "NextTransactNo", 1);
             return transactNo;
@@ -45,21 +45,18 @@ namespace IRAPBase
         /// 获取登录标识（SysLogID）
         /// </summary>
         /// <returns>long</returns>
-
-        public long GetSysLogID()
+        public static long GetSysLogID()
         {
             long sysLogID = IRAPSeqClient.GetSequenceNo(seqServerIPAddress, "NextSysLogID", 1);
             return sysLogID;
         }
-
-
         /// <summary>
         /// 通用获取序列号
         /// </summary>
         /// <param name="sequenceName">序列名称</param>
         /// <param name="cnt">申请数量</param>
         /// <returns>返回错误和序列值</returns>
-        public SequenceValueDTO GetSequence(string sequenceName, int cnt)
+        public static SequenceValueDTO GetSequence(string sequenceName, int cnt)
         {
             SequenceValueDTO res = new SequenceValueDTO();
             if  (cnt<=0)
@@ -90,11 +87,13 @@ namespace IRAPBase
                 return res;
             } 
         }
-
-
-
-        //重置序列
-        public SequenceValueDTO ResetSequence(string sequenceName, long startValue)
+        /// <summary>
+        /// 重置序列
+        /// </summary>
+        /// <param name="sequenceName">序列名</param>
+        /// <param name="startValue">重置的值</param>
+        /// <returns>返回1 重置成功，返回0 失败，（序列不存在）</returns>
+        public static SequenceValueDTO ResetSequence(string sequenceName, long startValue)
         { 
             SequenceValueDTO res = new SequenceValueDTO();
             if (sequenceName == "")
@@ -120,8 +119,14 @@ namespace IRAPBase
             } 
         }
 
-        //在线新增序列
-        public SequenceValueDTO AddSequence (string sequenceName, long initValue)
+
+        /// <summary>
+        /// 在线新增序列
+        /// </summary>
+        /// <param name="sequenceName">序列名称</param>
+        /// <param name="initValue">初始值</param>
+        /// <returns>返回1 表示增加成功，返回0 失败（序列已存在）</returns>
+        public static SequenceValueDTO AddSequence (string sequenceName, long initValue)
         {
             SequenceValueDTO res = new SequenceValueDTO();
             if (sequenceName == "")

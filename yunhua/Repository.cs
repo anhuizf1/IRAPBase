@@ -21,6 +21,7 @@ namespace IRAPBase
         public Repository()
         {
             this.context = new IRAPSqlDBContext("IRAPContext");
+
         }
         public Repository(IDbContext context)
         {
@@ -128,6 +129,7 @@ namespace IRAPBase
                 if (entities == null)
                 {
                     entities = context.Set<T>();
+                    
                 }
                 return entities;
             }

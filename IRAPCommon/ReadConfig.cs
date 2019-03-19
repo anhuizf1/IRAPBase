@@ -19,37 +19,44 @@ namespace IRAPCommon
         private static Dictionary<string, string> _paramList = new Dictionary<string, string>();
         public  DllReadConfig()
         {
-            if (_paramList.Count == 0)
+            try
             {
-                XmlDocument _xmlDoc = new XmlDocument();
-                string _assetXMLPath = AppDomain.CurrentDomain.BaseDirectory + @"ServiceDlls\IRAPORM.xml";
-
-                if (!File.Exists(_assetXMLPath))
+                if (_paramList.Count == 0)
                 {
-                   foreach( string item in    ConfigurationManager.AppSettings.Keys)
+                    XmlDocument _xmlDoc = new XmlDocument();
+                    string _assetXMLPath = AppDomain.CurrentDomain.BaseDirectory + @"ServiceDlls\IRAPORM.xml";
+
+                    if (!File.Exists(_assetXMLPath))
                     {
-                        _paramList.Add(item, ConfigurationManager.AppSettings[item].ToString());
+                        foreach (string item in ConfigurationManager.AppSettings.Keys)
+                        {
+                            _paramList.Add(item, ConfigurationManager.AppSettings[item].ToString());
+                        }
+                        return;
                     }
-                    return;
-                }
-                else
-                {
-                    _xmlDoc.Load(_assetXMLPath);
-                }
-               
-
-                XmlElement xmlContent = _xmlDoc.DocumentElement;
-
-                XmlNode rowNode = xmlContent.SelectSingleNode("/configuration/appSettings");
-
-                foreach (XmlNode node in rowNode.ChildNodes)
-                {
-                    if (node.NodeType == XmlNodeType.Element)
+                    else
                     {
-                        _paramList.Add(node.Attributes["key"].Value.ToString(), node.Attributes["value"].Value.ToString());
-                        // Log.WriteLocalMsg(2, node.Attributes["key"].Value + " " + node.Attributes["value"].Value.ToString());
+                        _xmlDoc.Load(_assetXMLPath);
+                    }
+
+
+                    XmlElement xmlContent = _xmlDoc.DocumentElement;
+
+                    XmlNode rowNode = xmlContent.SelectSingleNode("/configuration/appSettings");
+
+                    foreach (XmlNode node in rowNode.ChildNodes)
+                    {
+                        if (node.NodeType == XmlNodeType.Element)
+                        {
+                            _paramList.Add(node.Attributes["key"].Value.ToString(), node.Attributes["value"].Value.ToString());
+                            // Log.WriteLocalMsg(2, node.Attributes["key"].Value + " " + node.Attributes["value"].Value.ToString());
+                        }
                     }
                 }
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine(err.Message);
             }
         }
 

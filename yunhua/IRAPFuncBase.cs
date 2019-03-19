@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using IRAPBase.Entities;
+using Newtonsoft.Json;
+using System.Web.Script.Serialization;
 
 namespace IRAPBase
 {
@@ -19,8 +21,7 @@ namespace IRAPBase
         public IRAPFuncBase(IDbContext db)
         {
             _operList = new Dictionary<int, IRAPOperBase>(); 
-            _dbContext = db;
-            
+            _dbContext = db;  
         }
         public IRAPFuncBase(IDbContext db, int t3LeafID)
         {
@@ -31,7 +32,7 @@ namespace IRAPBase
         //增加业务操作
         public void AddOperation(int opID)
         {
-            _operList.Add(opID, new IRAPOperBase(_dbContext, opID));
+            //_operList.Add(opID, new IRAPOperBase(_dbContext, opID));
         }
 
         //申请序列号
@@ -68,6 +69,9 @@ namespace IRAPBase
             
             return null;
         }
-       
+
+
+  
+
     }
 }

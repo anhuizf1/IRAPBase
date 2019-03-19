@@ -18,6 +18,7 @@ namespace IRAPBase
         ObjectContext GetObjectContext { get; }
         IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity;
 
+        DbSet GetSet(Type t);
         DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : BaseEntity;
 
        // IDbSet<TEntity> AddSet<TEntity>() where TEntity : BaseEntity;

@@ -37,8 +37,8 @@ namespace IRAPBase
         public IRAPSqlDBContext(string dbConnectionStr) : base($"name={dbConnectionStr}")
         //  public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
         {
-           
-          
+
+
             this.Database.Log = message => Console.Write(message);
             //生成简单的SQL
             Configuration.UseDatabaseNullSemantics = true;
@@ -49,7 +49,7 @@ namespace IRAPBase
         public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
         {
             this.Database.Log = message => Console.WriteLine(message);
-             
+
             //生成简单的SQL
             Configuration.UseDatabaseNullSemantics = true;
             //不生成数据库
@@ -113,6 +113,10 @@ namespace IRAPBase
             return base.Set<TEntity>();
         }
 
+        public DbSet GetSet(Type t)
+        {
+            return Set(t);
+        }
         public new DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : BaseEntity
         {
 
