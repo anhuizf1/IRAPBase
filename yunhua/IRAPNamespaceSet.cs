@@ -180,6 +180,7 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文) </param>
+        /// <param name="nameID">名称标识（返回）</param>
         /// <returns>名称标识</returns>
         public IRAPError Add(
             int communityID,
@@ -222,8 +223,8 @@ namespace IRAPBase
 
                 #region 获取 nameID
                 string sequenceName = "NextNameID";
-                IRAPSequence sequence = new IRAPSequence();
-                SequenceValueDTO rtnSequence = sequence.GetSequence(sequenceName, 1);
+                SequenceValueDTO rtnSequence = 
+                    IRAPSequence.GetSequence(sequenceName, 1);
                 if (rtnSequence.ErrCode != 0)
                 {
                     string msg = rtnSequence.ErrText;
@@ -596,6 +597,7 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文) </param>
+        /// <param name="nameID">名称标识（返回）</param>
         /// <returns>名称标识</returns>
         public IRAPError Add(
             int communityID,
@@ -638,8 +640,8 @@ namespace IRAPBase
 
                 #region 获取 nameID
                 string sequenceName = "NextNameID";
-                IRAPSequence sequence = new IRAPSequence();
-                SequenceValueDTO rtnSequence = sequence.GetSequence(sequenceName, 1);
+                SequenceValueDTO rtnSequence = 
+                    IRAPSequence.GetSequence(sequenceName, 1);
                 if (rtnSequence.ErrCode != 0)
                 {
                     string msg = rtnSequence.ErrText;
