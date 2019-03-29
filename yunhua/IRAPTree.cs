@@ -35,7 +35,7 @@ namespace IRAPBase
         Dictionary<int, TreeTransient> _transientEntity;
         Dictionary<int, TreeStatus> _status;
         NameSpaceEntity _nameSpace;
-        ITreeBase customTree = null;
+        //ITreeBase customTree = null;
         public long PK { get { return _communityID * 10000L; } }
         //1.(标识)获取叶子集//叶子
         public TreeLeafEntity LeafEntity { get { return leaf; } }
@@ -94,23 +94,23 @@ namespace IRAPBase
                 return _status;
             }
         }
-        public IQueryable<BaseRowAttrEntity> GetRowSet(int ordinal)
-        {
-            if (leaf == null)
-            {
-                return null;
-            }
-            return customTree.GetRowAttr(ordinal).Where(c => c.PartitioningKey == PK + _treeID && c.EntityID == leaf.EntityID).OrderBy(r => r.Ordinal);
-        }
+        //public IQueryable<BaseRowAttrEntity> GetRowSet(int ordinal)
+        //{
+        //    if (leaf == null)
+        //    {
+        //        return null;
+        //    }
+        //    return customTree.GetRowAttr(ordinal).Where(c => c.PartitioningKey == PK + _treeID && c.EntityID == leaf.EntityID).OrderBy(r => r.Ordinal);
+        //}
         //7.一般属性
-        public BaseGenAttrEntity GetGenAttr()
-        {
-            if (leaf == null)
-            {
-                return null;
-            }
-            return customTree.GetGenAttr().FirstOrDefault(c => c.PartitioningKey == PK + _treeID && c.EntityID == leaf.EntityID);
-        }
+        //public BaseGenAttrEntity GetGenAttr()
+        //{
+        //    if (leaf == null)
+        //    {
+        //        return null;
+        //    }
+        //    return customTree.GetGenAttr().FirstOrDefault(c => c.PartitioningKey == PK + _treeID && c.EntityID == leaf.EntityID);
+        //}
         //8. 行集属性
 
         /// <summary>
@@ -202,13 +202,13 @@ namespace IRAPBase
             _transientEntity = new Dictionary<int, TreeTransient>();
             _status = new Dictionary<int, TreeStatus>();
             //如果此树有单独定义的动态创建
-            if (System.Type.GetType(className) != null)
-            {
-                customTree = (ITreeBase)Activator.CreateInstance(System.Type.GetType(className), context);
-            }
+            // if (System.Type.GetType(className) != null)
+            // {
+            ///      customTree = (ITreeBase)Activator.CreateInstance(System.Type.GetType(className), context);
+            //  }
 
         }
-
+        /*
         public IRAPError SaveTransient(params TreeTransient[] dict)
         {
             Type e = null;
@@ -296,12 +296,13 @@ namespace IRAPBase
             return new IRAPError(0, "分类属性保存成功！");
 
         }
-
+      
         //指定其他分类属性
         public TreeClassEntity GetLinkClassAttr(string dimCode)
         {
             throw new NotImplementedException();
         }
+       
         /// <summary>
         /// 保存行集属性
         /// </summary>
@@ -328,38 +329,39 @@ namespace IRAPBase
                 r.VersionLE = (int)(Math.Pow(2, 31) - 1);
             }
             return customTree.SaveRSAttr(list);
-        }
+        }*/
 
         /// <summary>
         /// 保存一般属性
         /// </summary>
         /// <param name="e">实体类型</param>
         /// <returns>通用错误</returns>
-        public IRAPError SaveGenAttr(BaseGenAttrEntity e)
-        {
-            if (customTree == null)
-            {
-                return new IRAPError(99, $"此树:TreeID={_treeID}没有定义个性化类：" + className + "，无法保存属性！");
-            }
-            if (leaf == null)
-            {
-                return new IRAPError(22, "结点不需要保存一般属性！");
-            }
-            if (e.EntityID != leaf.EntityID)
-            {
-                return new IRAPError(22, $"实体中EntityID不正确，应该为{leaf.EntityID}！");
-            }
-            e.PartitioningKey = PK + _treeID;
-            return customTree.SaveGenAttr(e);
-        }
+        //public IRAPError SaveGenAttr(BaseGenAttrEntity e)
+        //{
+        //    if (customTree == null)
+        //    {
+        //        return new IRAPError(99, $"此树:TreeID={_treeID}没有定义个性化类：" + className + "，无法保存属性！");
+        //    }
+        //    if (leaf == null)
+        //    {
+        //        return new IRAPError(22, "结点不需要保存一般属性！");
+        //    }
+        //    if (e.EntityID != leaf.EntityID)
+        //    {
+        //        return new IRAPError(22, $"实体中EntityID不正确，应该为{leaf.EntityID}！");
+        //    }
+        //    e.PartitioningKey = PK + _treeID;
+        //    return customTree.SaveGenAttr(e);
+        //}
 
     }
 
-
     /// <summary>
-    /// 存取树万能类
+    ///模块编号：02
+    ///作用：存取树万能类 
+    ///作者：张峰
+    ///编写日期：2019-03-1
     /// </summary>
-
     public class IRAPTreeBase
     {
         #region 变量定义
@@ -393,8 +395,6 @@ namespace IRAPBase
         {
             get { return _leafEntity; }
         }
-
-
         /// <summary>
         ///根据社区和树标识查询的叶子集合
         /// </summary>
@@ -447,6 +447,7 @@ namespace IRAPBase
             {
                 return _treeClass.Select(m => new ClassifyDTO
                 {
+                    AttrTreeID = m.AttrTreeID,
                     Ordinal = m.Ordinal,
                     A4LeafID = m.A4LeafID,
                     A4Code = m.A4Code,
@@ -529,7 +530,6 @@ namespace IRAPBase
                 }
             }
         }
-
         #endregion
 
         #region 保护的方法
@@ -549,11 +549,15 @@ namespace IRAPBase
         /// 新增节点或叶子
         /// </summary>
         /// <param name="fatherNode">父结点</param>
+        /// <param name="englishName">英文名称</param>
+        /// <param name="createBy">创建人</param>
         /// <param name="nodeCode">结点代码</param>
+        /// <param name="alterNateCode">替代代码</param>
         /// <param name="nodeName">结点名称</param>
         /// <param name="udfOrdinal">位置序号</param>
         /// <returns></returns>
-        private NewTreeNodeDTO NewNode(int fatherNode, string nodeCode, string nodeName, float udfOrdinal = 0F)
+        private NewTreeNodeDTO NewNode(int fatherNode, string englishName, string createBy,
+            string nodeCode, string alterNateCode, string nodeName, float udfOrdinal = 0F)
         {
             NewTreeNodeDTO res = new NewTreeNodeDTO();
 
@@ -603,7 +607,12 @@ namespace IRAPBase
                     UDFOrdinal = udfOrdinal,
                     Code = nodeCode,
                     CSTRoot = 0,
-                    Father = fatherNode
+                    Father = fatherNode,
+                    DescInEnglish = englishName,
+                    CreatedBy = createBy,
+                    CreatedOn = DateTime.Now,
+                    ModifiedBy = "",
+                    ModifiedOn = DateTime.Now,
                 };
                 string seqName = "NextSysNodeID";
                 if (_treeID > 100)
@@ -642,7 +651,7 @@ namespace IRAPBase
                 TableSet(c).Add(c);
                 _db.SaveChanges();
                 res.ErrCode = 0;
-                res.ErrText = "结点创建成功！ 注意调用SaveChanges保存。";
+                res.ErrText = "结点创建成功！ ";
                 return res;
             }
             catch (Exception err)
@@ -707,7 +716,8 @@ namespace IRAPBase
                 }
                 e.LeafID = (int)dto.SequenceValue;
                 SequenceValueDTO dto2 = IRAPSequence.GetSequence(seqEntityName, 1);
-                e.EntityID = (int)dto2.SequenceValue;
+                //为了保证LeafID与EntityID绝对一致性，用同一个序列值
+                e.EntityID = e.LeafID; // (int)dto2.SequenceValue;
                 TreeLeafEntity c;
                 if (_treeID <= 100)
                 {
@@ -720,7 +730,7 @@ namespace IRAPBase
                 TableSet(c).Add(c);
                 _db.SaveChanges();
                 res.NewNodeID = e.LeafID;
-                res.NewEntityID = e.EntityID;
+                res.NewEntityID = e.LeafID;
                 res.PartitioningKey = PK;
                 res.ErrCode = 0;
                 res.ErrText = $"新增叶结点成功！叶结点标识：{e.LeafID} ";
@@ -747,13 +757,13 @@ namespace IRAPBase
         /// <param name="udfOrdinal">插入位置序号</param>
         /// <returns></returns>
         public NewTreeNodeDTO NewTreeNode(int nodeType, int fatherNode,
-            string nodeName, string nodeCode = "", string createBy = "", string alterNateCode = "", string englishName = "", float udfOrdinal = 0F)
+            string nodeName, string nodeCode, string createBy, string alterNateCode = "", string englishName = "", float udfOrdinal = 0F)
         {
             fatherNode = Math.Abs(fatherNode);
             NewTreeNodeDTO res = new NewTreeNodeDTO();
             if (nodeType == 3)
             {
-                return NewNode(fatherNode, nodeCode, nodeName, udfOrdinal);
+                return NewNode(fatherNode, englishName, createBy, nodeCode, alterNateCode, nodeName, udfOrdinal);
             }
             else if (nodeType == 4)
             {
@@ -780,7 +790,7 @@ namespace IRAPBase
         /// <param name="modifiedBy">修改人代码</param>
         /// <param name="udfOrdinal">序号</param>
         /// <returns></returns>
-        public IRAPError ModifyTreeNode(int nodeType, int nodeID, string nodeName, string nodeCode = "", string englishName = "", string alternateCode = "", string modifiedBy = "", float udfOrdinal = 0F)
+        public IRAPError ModifyTreeNode(int nodeType, int nodeID, string nodeName, string nodeCode = "", string englishName = "", string alternateCode = "", string modifiedBy = "", float udfOrdinal = 1F)
         {
             IRAPError error = new IRAPError();
             try
@@ -807,6 +817,9 @@ namespace IRAPBase
                     thisNode.Code = nodeCode;
                     thisNode.NodeName = nodeName;
                     thisNode.UDFOrdinal = udfOrdinal;
+                    thisNode.DescInEnglish = englishName;
+                    thisNode.ModifiedOn = DateTime.Now;
+                    thisNode.ModifiedBy = modifiedBy;
                     _db.SaveChanges();
                 }
                 else if (nodeType == 4)
@@ -916,7 +929,7 @@ namespace IRAPBase
             }
         }
         /// <summary>
-        /// 保存分类属性
+        /// 保存或修改分类属性
         /// </summary>
         /// <param name="dict">分类属性字典</param>
         /// <returns>返回错误</returns>
@@ -924,7 +937,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                 throw  new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             var list = _treeClass.ToList();
             foreach (TreeClassifyDTO item in dict)
@@ -936,15 +949,27 @@ namespace IRAPBase
                 }
                 catch (Exception err)
                 {
-                    return new IRAPError(9999, $"第{item.Ordinal}分类属性TreeID:{item.TreeID} LeafID:{item.DimLeaf}在系统中不存在！" + err.Message);
+                    throw new Exception( $"第{item.Ordinal}分类属性TreeID:{item.TreeID} LeafID:{item.DimLeaf}在系统中不存在！" + err.Message);
                 }
-
+                var thisEntity = IRAPTreeSet.GetLeafEntity(item.DimLeaf);
+                if (thisEntity == null)
+                {
+                    throw new Exception("保存的分类属性LeafID不存在！");
+                }
                 if (list.Exists(c => c.Ordinal == item.Ordinal))
                 {
-                    list.FirstOrDefault(c => c.Ordinal == item.Ordinal).A4LeafID = item.DimLeaf;
+
+                    var cEntity = list.FirstOrDefault(c => c.Ordinal == item.Ordinal);
+                    cEntity.A4LeafID = item.DimLeaf;
+                    cEntity.A4Code = thisEntity.Code;
+                    cEntity.A4NodeName = thisEntity.NodeName;
+                    cEntity.A4AlternateCode = thisEntity.AlternateCode;
+                    cEntity.A4DescInEnglish = thisEntity.DescInEnglish;
+
                 }
                 else
                 {
+
                     TreeClassEntity c;
                     TreeClassEntity e = new TreeClassEntity
                     {
@@ -952,6 +977,10 @@ namespace IRAPBase
                         LeafID = _leafID,
                         Ordinal = item.Ordinal,
                         PartitioningKey = PK,
+                        A4Code = thisEntity.Code,
+                        A4NodeName = thisEntity.NodeName,
+                        A4AlternateCode = thisEntity.AlternateCode,
+                        A4DescInEnglish = thisEntity.DescInEnglish
                         //TreeID = (short)_treeID, // (short)item.TreeID //根据模型填写
                     };
                     if (_treeID <= 100)
@@ -970,7 +999,7 @@ namespace IRAPBase
             return new IRAPError(0, "分类属性保存成功！");
         }
         /// <summary>
-        /// 根据参数位置保存分类属性
+        /// 根据参数位置保存或修改分类属性
         /// </summary>
         /// <param name="dict">分类属性值</param>
         /// <returns>通用错误IRAPError</returns>
@@ -978,12 +1007,17 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception("构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             int i = 0;
             var list = _treeClass.ToList();
             foreach (int v in dict)
             {
+                var thisEntity = IRAPTreeSet.GetLeafEntity(v);
+                if (thisEntity == null)
+                {
+                    throw new Exception( "保存的分类属性LeafID不存在！");
+                }
                 i++;
                 var obj = list.FirstOrDefault(c => c.Ordinal == i);
                 if (obj == null)
@@ -998,6 +1032,10 @@ namespace IRAPBase
                         VersionGE = 0,
                         VersionLE = (int)(Math.Pow(2, 31) - 1),
                         A4LeafID = v,
+                        A4Code = thisEntity.Code,
+                        A4NodeName = thisEntity.NodeName,
+                        A4AlternateCode = thisEntity.AlternateCode,
+                        A4DescInEnglish = thisEntity.DescInEnglish
                         //TreeID = (short)_treeID
                     };
                     if (_treeID <= 100)
@@ -1020,20 +1058,31 @@ namespace IRAPBase
         }
 
         /// <summary>
-        /// 指定分类属性序号，保存分类属性
+        /// 保存或修改分类属性
         /// </summary>
         /// <param name="ordinal">分类属性序号</param>
         /// <param name="dimLeaf">分类属性值</param>
         /// <returns></returns>
         public IRAPError SaveClassAttr(int ordinal, int dimLeaf)
         {
+            if (ordinal > 254)
+            {
+                throw new Exception( "分类属性序列超过254，请确认调用的重载方法是否正确！");
+            }
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception("构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
+            var thisEntity = IRAPTreeSet.GetLeafEntity(dimLeaf);
+            if (thisEntity == null)
+            {
+                throw new Exception( "保存的分类属性LeafID不存在！");
+            }
+
             TreeClassEntity dimobj = _treeClass.FirstOrDefault(r => r.Ordinal == ordinal);
             if (dimobj == null)
             {
+
                 TreeClassEntity c;
                 TreeClassEntity e = new TreeClassEntity
                 {
@@ -1044,6 +1093,11 @@ namespace IRAPBase
                     VersionGE = 0,
                     VersionLE = (int)(Math.Pow(2, 31) - 1),
                     A4LeafID = dimLeaf,
+                    A4Code = thisEntity.Code,
+                    A4NodeName = thisEntity.NodeName,
+                    A4AlternateCode = thisEntity.AlternateCode,
+                    A4DescInEnglish = thisEntity.DescInEnglish
+
                     //TreeID = (short)_treeID
                 };
                 if (_treeID <= 100)
@@ -1058,13 +1112,17 @@ namespace IRAPBase
             }
             else
             {
+                dimobj.A4Code = thisEntity.Code;
+                dimobj.A4NodeName = thisEntity.NodeName;
+                dimobj.A4AlternateCode = thisEntity.AlternateCode;
+                dimobj.A4DescInEnglish = thisEntity.DescInEnglish;
                 dimobj.A4LeafID = dimLeaf;
             }
             _db.SaveChanges();
             return new IRAPError(0, "保存指定分类属性成功！");
         }
         /// <summary>
-        /// 保存状态属性
+        /// 保存和修改状态属性
         /// </summary>
         /// <param name="statusDict">状态属性值，参数位置代表状态属性序号</param>
         /// <returns>通用错误IRAPError</returns>
@@ -1072,7 +1130,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             int i = 0;
             var list = _treeStatus.ToList();
@@ -1112,7 +1170,7 @@ namespace IRAPBase
         }
 
         /// <summary>
-        /// 保存指定的状态属性
+        /// 保存和修改指定的状态属性
         /// </summary>
         /// <param name="ordinal">状态属性位置序号</param>
         ///  <param name="statusValue">状态属性值</param>
@@ -1121,7 +1179,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             var obj = _treeStatus.FirstOrDefault(c => c.Ordinal == ordinal);
             if (obj == null)
@@ -1154,7 +1212,7 @@ namespace IRAPBase
             return new IRAPError(0, "状态属性保存成功");
         }
         /// <summary>
-        /// 保存瞬态属性
+        /// 保存和修改瞬态属性
         /// </summary>
         /// <param name="dict">瞬态属性值，传参顺序表示瞬态属性序号</param>
         /// <returns>通用错误IRAPError</returns>
@@ -1162,7 +1220,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception("构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             int i = 0;
             var list = _treeTrans.ToList();
@@ -1205,7 +1263,7 @@ namespace IRAPBase
         }
 
         /// <summary>
-        /// 保存瞬态属性
+        /// 保存和修改瞬态属性
         /// </summary>
         /// <param name="ordinal">瞬态属性序号</param>
         /// <param name="transValue">瞬态属性值</param>
@@ -1214,7 +1272,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             var obj = _treeTrans.FirstOrDefault(c => c.Ordinal == ordinal);
             if (obj == null)
@@ -1250,7 +1308,7 @@ namespace IRAPBase
             return new IRAPError(0, "瞬态属性保存成功！");
         }
         /// <summary>
-        /// 保存一般属性
+        /// 保存和修改一般属性
         /// </summary>
         /// <param name="e">一般属性的实体</param>
         /// <returns>通用错误IRAPError</returns>
@@ -1258,7 +1316,7 @@ namespace IRAPBase
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             //验证表对不对与数据字典比较
             e.PartitioningKey = PK;
@@ -1275,37 +1333,48 @@ namespace IRAPBase
             _db.SaveChanges();
             return new IRAPError(0, $"一般属性{e.GetType().Name}保存成功！");
         }
-
         /// <summary>
-        /// 保存行集属性
+        /// 删除并保存行集属性，处理逻辑是：先删除后插入
         /// </summary>
-        /// <param name="ordinal">行集属性序号</param>
+        /// <param name="type">行集类型（为了list传空值时判断表名）</param>
         /// <param name="list">行集实体</param>
         /// <returns>通用错误IRAPError</returns>
-        public IRAPError SaveRSAttr(int ordinal, List<BaseRowAttrEntity> list)
+        public IRAPError SaveRSAttr(Type type, List<BaseRowAttrEntity> list)
         {
             if (_leafID == 0 || _leafEntity == null)
             {
-                return new IRAPError(22, "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
+                throw new Exception( "构造IRAPTreeBase参数不正确，检查社区、树标识，LeafID是否正确！");
             }
             //IRAPSqlDBContext sql = new IRAPSqlDBContext();
-            if (list == null || list.Count == 0)
-            {
-                return new IRAPError(99, "输入list没有记录，无法保存行集属性！");
-            }
+
+            //if (list == null || list.Count == 0)
+            //{
+            //    error.ErrCode = 99;
+            //    error.ErrText = "输入list没有记录，无法保存行集属性！";
+            //    return error;
+            //}
             //验证行集序号
+            if (list != null && list.Count > 0)
+            {
+                if (list[0].GetType() != type)
+                {
+                    throw new Exception("输入list类型与type参数类型不符！");
+                }
+            }
             //先删除行集再插入
-            string tblName = ObjectCopy.GetTBLName(list[0]);
+            string tblName = ObjectCopy.GetTBLName(type);
             if (tblName == "")
             {
-                return new IRAPError(99, "行集属性表定义时未加入Table属性指定表名。");
+                return new IRAPError(99, "行集属性表定义时未加入Table属性指定表名。"+ type.ToString());
             }
-            var list2 = TableSet(list[0]).SqlQuery($"select * from {tblName} where PartitioningKey=@p and EntityID=@e",
+           
+            var list2 = _db.GetSet(type).SqlQuery($"select * from {tblName} where PartitioningKey=@p and EntityID=@e",
                  new SqlParameter("@p", PK), new SqlParameter("@e", _entityID));
             foreach (BaseRowAttrEntity r in list2)
             {
                 TableSet(r).Remove(r);
             }
+
             // Console.WriteLine("表名："+tblName);
             // _db.DataBase.ExecuteSqlCommand($"delete from {tblName} where PartitioningKey=@p and EntityID=@e",
             //    new SqlParameter("@p", PK), new SqlParameter("@e", _entityID));
@@ -1332,7 +1401,7 @@ namespace IRAPBase
         /// 获取一般属性，所有一般属性必须继承BaseGenAttrEntity 使用者知道具体的子类型是什么
         /// </summary>
         /// <typeparam name="T">一般属性子类型</typeparam>
-        /// <returns>通用错误IRAPError</returns>
+        /// <returns>一般属性实体可能为空</returns>
         public BaseGenAttrEntity GetGenAttr<T>() where T : BaseGenAttrEntity
         {
             //未来是否根据模型 创建一个子类型返回？
@@ -1348,6 +1417,57 @@ namespace IRAPBase
         {
             return _db.Set<T>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
         }
+        /// <summary>
+        /// 根据节点和叶子生成TreeView数据
+        /// </summary>
+        /// <returns></returns>
+        public List<TreeViewDTO> GetTreeView()
+        {
+            List<TreeViewDTO> list = new List<TreeViewDTO>();
+            var nodeSet = _nodes.OrderBy(c => c.NodeDepth).OrderBy(c => c.Father).ToList();
+            foreach (TreeNodeEntity r in nodeSet)
+            {
+                TreeViewDTO item = new TreeViewDTO()
+                {
+                    Accessibility = 1,
+                    AlternateCode = r.Code,
+                    CSTRoot = r.CSTRoot,
+                    NodeCode = r.Code,
+                    NodeDepth = r.NodeDepth,
+                    NodeID = r.NodeID,
+                    NodeName = r.NodeName,
+                    NodeStatus = r.NodeStatus,
+                    NodeType = 3,
+                    Parent = r.Father,
+                    TreeViewType = 2,
+                    UDFOrdinal = r.UDFOrdinal
+                };
+                list.Add(item);
+                //找出此节点下面的叶子
+                var leaf = _leaves.Where(c => c.Father == r.NodeID);
+                foreach (TreeLeafEntity row in leaf)
+                {
+                    TreeViewDTO dto = new TreeViewDTO()
+                    {
+                        Accessibility = 1,
+                        AlternateCode = row.AlternateCode,
+                        CSTRoot = row.CSTRoot,
+                        NodeCode = row.Code,
+                        NodeDepth = row.NodeDepth,
+                        NodeID = -row.LeafID,
+                        NodeName = row.NodeName,
+                        NodeStatus = (byte)row.LeafStatus,
+                        NodeType = 4,
+                        Parent = row.Father,
+                        TreeViewType = 2,
+                        UDFOrdinal = row.UDFOrdinal,
+                    };
+                    list.Add(dto);
+                }
+            }
+            return list;
+        }
+
         //获取一个叶子的相关所有属性（列式 DTO）
 
         //获取一个叶子的相关所有属性（行式DTO）
@@ -1357,55 +1477,84 @@ namespace IRAPBase
         //保存一个叶子的所有属性（行式）
 
         //考虑根据分类属性入口查询树的情况 ？
+        /// <summary>
+        /// 获取第n级分类属性实体
+        /// </summary>
+        /// <param name="dimOrdinal">多级分类属性序号</param>
+        /// <returns></returns>
+        public TreeLeafEntity GetClassifyByOrdinal(params int[] dimOrdinal)
+        {
+            //必须知道模型才能查出来？
+            int leafid = _leafID;
+            int treeid = _treeID;
+            foreach (int ord in dimOrdinal)
+            {
+                ClassifyDTO dto = GetClassifyEntity(treeid, leafid, ord);
+                if (dto == null)
+                {
+                    throw new Exception($"树{treeid}的第{ord}分类属性未定义！");
+                }
+                else
+                {
+                    leafid = dto.A4LeafID;
+                    treeid = dto.AttrTreeID;
+                }
+            }
+            IDbContext db = null;
+            if (treeid <= 100)
+            {
+                if (_db.DataBase.Connection.Database == "IRAPMDM")
+                {
+                    db = DBContextFactory.Instance.CreateContext("IRAPContext");
+                }
+                else
+                {
+                    db = _db;
+                }
+            }
+            else
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            }
+            IRAPTreeBase treebase = new IRAPTreeBase(db, _communityID, treeid, leafid);
+            return treebase.Leaf;
+        }
+
+        private ClassifyDTO GetClassifyEntity(int treeID, int leafID, int ordinal)
+        {
+            IDbContext db = null;
+            if (treeID <= 100)
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPContext");
+            }
+            else
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            }
+
+            IRAPTreeBase treeBase = new IRAPTreeBase(db, _communityID, treeID, leafID);
+            if (treeBase.ClassifyDict.ContainsKey(ordinal))
+            {
+                return treeBase.ClassifyDict[ordinal];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
         #endregion
         /// <summary>
-        /// 提交事务 以后不再使用
+        /// 提交事务 以后不再使用，WebAPI方法中请使用IRAPBizBase中的Commit提交
         /// </summary>
         [Obsolete]
         public void Commit()
         {
             _db.SaveChanges();
         }
-        /// <summary>
-        /// 根据社区号,树标识，叶标识查询一个实体对象，找不到返回null
-        /// </summary>
-        /// <param name="db">已有数据库上下文</param>
-        /// <param name="communityID">社区编号</param>
-        /// <param name="treeID">树标识</param>
-        /// <param name="leafID">叶标识</param>
-        /// <returns></returns>
-        public static TreeLeafEntity GetLeafEntity(IDbContext db ,int communityID , int treeID, int leafID)
-        {
-            long pk = communityID * 10000L + treeID;
-            if (treeID <= 100)
-            {
-                return db.Set<ETreeSysLeaf>().FirstOrDefault(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && leafID == c.LeafID);
-            }
-            else
-            {
-                return db.Set<ETreeBizLeaf>().FirstOrDefault(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && leafID == c.LeafID);
-            }
-        }
-        /// <summary>
-        /// 根据Code模糊找出叶子清单
-        /// </summary>
-        /// <param name="db">数据库上下文</param>
-        /// <param name="communityID">社区标识</param>
-        /// <param name="treeID">树标识</param>
-        /// <param name="code">代码</param>
-        /// <returns></returns>
-        public static IQueryable<TreeLeafEntity> GetLeafSetByCode(IDbContext db, int communityID, int treeID, string code)
-        {
-            long pk = communityID * 10000L + treeID;
-            if (treeID <= 100)
-            {
-                return db.Set<ETreeSysLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID &&  c.Code.Contains(code) );
-            }
-            else
-            {
-                return db.Set<ETreeBizLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
-            }
-        }
+
+
     }
 
 

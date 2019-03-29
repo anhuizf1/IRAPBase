@@ -71,12 +71,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DTO\TreeModelDTO.cs" />
     <Compile Include="Entities\BaseAuxFact.cs" />
     <Compile Include="Entities\BaseRSFact.cs" />
     <Compile Include="Entities\GenAttrEntity.cs" />
     <Compile Include="Entities\GenAttr_T1.cs" />
     <Compile Include="Entities\RowAttrEntity.cs" />
     <Compile Include="Entities\RowSet_T1R1.cs" />
+    <Compile Include="Extend.cs" />
     <Compile Include="ITreeBase-del.cs" />
     <Compile Include="IRAPBizBase.cs" />
     <Compile Include="Log.cs" />

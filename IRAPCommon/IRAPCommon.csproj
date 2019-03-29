@@ -34,6 +34,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,10 +44,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetMachineInfo.cs" />
+    <Compile Include="Des3Util.cs" />
+    <Compile Include="hardware.cs" />
+    <Compile Include="HTTPUtil.cs" />
+    <Compile Include="IRAPSHA.cs" />
+    <Compile Include="URLEncode.cs" />
+    <Compile Include="ZipUtil.cs" />
+    <Compile Include="IRAPAES.cs" />
+    <Compile Include="IRAPDES.cs" />
     <Compile Include="ReadConfig.cs" />
     <Compile Include="IRAPMD5.cs" />
     <Compile Include="IRAPSeqClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnixTime.cs" />
+    <Compile Include="BarcodePrint.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

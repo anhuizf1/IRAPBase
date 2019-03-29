@@ -11,9 +11,21 @@ namespace IRAPBase.Entities
     /// </summary>
     public class BaseRSFact : BaseEntity
     {
+        /// <summary>
+        /// 事实编号（通过序列服务器申请）
+        /// </summary>
         public long FactID { get; set; }
+        /// <summary>
+        /// 分区键
+        /// </summary>
         public long PartitioningKey { get; set; }
+        /// <summary>
+        /// 工作流实例
+        /// </summary>
         public string WFInstanceID { get; set; }
+        /// <summary>
+        /// 序号
+        /// </summary>
         public int Ordinal { get; set; }
     }
 }
