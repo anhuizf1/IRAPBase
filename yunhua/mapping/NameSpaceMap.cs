@@ -17,11 +17,14 @@ namespace IRAPBase.mapping
           
             HasKey(t => new { t.PartitioningKey, t.LanguageID, t.NameID });
 
-            Property(t => t.NameDescription).IsRequired();
+            Property(t => t.PartitioningKey).IsRequired();
             Property(t => t.NameID).IsRequired();
             Property(t => t.LanguageID).IsRequired();
-
-            // Property(p => p.LanguageID).HasColumnType("smallint");
+            Property(t => t.BChecksum).IsRequired();
+            Property(t => t.NameDescription).IsRequired();
+            Property(t => t.SearchCode1).IsRequired();
+            Property(t => t.SearchCode2).IsRequired();
+            Property(t => t.HelpMemoryCode).IsRequired();
         }
     }
 
@@ -34,11 +37,14 @@ namespace IRAPBase.mapping
 
             HasKey(t => new { t.PartitioningKey, t.LanguageID, t.NameID });
 
-            Property(t => t.NameDescription).IsRequired();
+            Property(t => t.PartitioningKey).IsRequired();
             Property(t => t.NameID).IsRequired();
             Property(t => t.LanguageID).IsRequired();
-
-            // Property(p => p.LanguageID).HasColumnType("smallint");
+            Property(t => t.BChecksum).IsRequired();
+            Property(t => t.NameDescription).IsRequired();
+            Property(t => t.SearchCode1).IsRequired();
+            Property(t => t.SearchCode2).IsRequired();
+            Property(t => t.HelpMemoryCode).IsRequired();
         }
     }
 }
