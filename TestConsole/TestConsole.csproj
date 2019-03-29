@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\AuxFact_PMO.cs" />
     <Compile Include="Entities\EGenAttr_T102.cs" />
     <Compile Include="EUTB_Test.cs" />
     <Compile Include="IRAPBizTest.cs" />

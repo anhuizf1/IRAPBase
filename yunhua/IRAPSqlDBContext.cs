@@ -22,23 +22,35 @@ namespace IRAPBase
             AutomaticMigrationsEnabled = false;
         }
     }
+    /// <summary>
+    /// SQLServer专用连接上下文类
+    /// </summary>
     public class IRAPSqlDBContext : DbContext, IDbContext
     {
         // private Assembly extendAssembly = null;
         //public static DbModelBuilder _modelBuilder = null;
 
+          
         public bool AutoDetectChangesEnabled
         {
             get { return Configuration.AutoDetectChangesEnabled; }
             set { Configuration.AutoDetectChangesEnabled = value; }
         }
+        /// <summary>
+        /// 数据库
+        /// </summary>
         public Database DataBase { get { return this.Database; } }
+        /// <summary>
+        /// 上下文
+        /// </summary>
         public ObjectContext GetObjectContext { get { return ((IObjectContextAdapter)this).ObjectContext; } }
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="dbConnectionStr">数据库连接，与配置文件中的key值对应</param>
         public IRAPSqlDBContext(string dbConnectionStr) : base($"name={dbConnectionStr}")
         //  public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
         {
-
-
             this.Database.Log = message => Console.Write(message);
             //生成简单的SQL
             Configuration.UseDatabaseNullSemantics = true;
@@ -46,6 +58,9 @@ namespace IRAPBase
             Database.SetInitializer<IRAPSqlDBContext>(null);
             //  Database.SetInitializer<IRAPDBContext>(new DropCreateDatabaseIfModelChanges<IRAPDBContext>());
         }
+        /// <summary>
+        /// 创建数据库连接默认IRAPSqlDB这个连接
+        /// </summary>
         public IRAPSqlDBContext() //: base("name=IRAPSqlDBContext")                    
         {
             this.Database.Log = message => Console.WriteLine(message);
@@ -57,6 +72,10 @@ namespace IRAPBase
             //  Database.SetInitializer<IRAPDBContext>(new DropCreateDatabaseIfModelChanges<IRAPDBContext>());
         }
 
+        /// <summary>
+        /// 模型创建时设置
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
 
@@ -105,7 +124,6 @@ namespace IRAPBase
             //modelBuilder.Entity<TreeBase>().HasKey(k => k.LeafID);
             // modelBuilder.Entity<ModelTreeClassfiy>();
             base.OnModelCreating(modelBuilder);
-
         }
         //注册实体类
         public new IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
@@ -113,6 +131,11 @@ namespace IRAPBase
             return base.Set<TEntity>();
         }
 
+       /// <summary>
+       /// 根据类型返回DbSet
+       /// </summary>
+       /// <param name="t"></param>
+       /// <returns></returns>
         public DbSet GetSet(Type t)
         {
             return Set(t);
@@ -123,18 +146,26 @@ namespace IRAPBase
             return base.Entry(entity);
         }
 
-
+        /// <summary>
+        /// 保存数据库变化
+        /// </summary>
+        /// <returns></returns>
         public override int SaveChanges()
         {
 
             return base.SaveChanges();
         }
-
+        /// <summary>
+        /// 回滚事务
+        /// </summary>
         public void RollBack()
         {
-
-            base.Database.CurrentTransaction.Rollback();
+            if (base.Database.CurrentTransaction != null)
+            {
+                base.Database.CurrentTransaction.Rollback();
+            }
         }
+        [Obsolete]
         public void Dispose2()
         {
             base.Dispose();

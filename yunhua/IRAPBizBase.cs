@@ -10,6 +10,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Collections;
 using IRAPBase.DTO;
+using System.Data.Entity;
+using Newtonsoft.Json.Linq;
 
 namespace IRAPBase
 {
@@ -23,21 +25,61 @@ namespace IRAPBase
         private int _communityID = 0;
         private int _treeID = 0;
         private int _leafID = 0;
-        private string _dbName = "";
+        //private string _dbName = "";
         private IRAPTreeBase _irapTreeBase = null;
-
+ 
+        /// <summary>
+        /// 当前社区
+        /// </summary>
+        public int CommunityID { get { return _communityID; } }
+        //当前数据库连接上下文
         public IDbContext DB { get { return _db; } }
+        /// <summary>
+        /// 默认创建IRAPMDM的数据库连接
+        /// </summary>
         public IRAPBizBase()
         {
-            _db = DBContextFactory.Instance.CreateContext("IRAPContext");
+            _db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
         }
         /// <summary>
         /// 切换数据库
         /// </summary>
         /// <param name="dbName">数据库名，例如：IRAP,IRAPMDM</param>
+        /// <param name="communityID">社区</param>
         /// <returns>返回数据库上下文</returns>
         public IDbContext UsingContext(string dbName)
         {
+           //if (_communityID > 0)
+           // {
+           //     _communityID = communityID;
+           // }
+            if (_db.DataBase.Connection.Database == dbName)
+            {
+                return _db;
+            }
+            else
+            {
+                if (_db.DataBase.CurrentTransaction != null)
+                {
+                    _db.DataBase.CurrentTransaction.Rollback();
+                }
+                _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
+            }
+            return _db;
+        }
+
+        /// <summary>
+        /// 切换数据库(带社区)
+        /// </summary>
+        /// <param name="dbName">数据库名</param>
+        /// <param name="communityID">社区</param>
+        /// <returns></returns>
+        public IDbContext UsingContext(string dbName, int communityID)
+        {
+            if (_communityID > 0)
+            {
+                _communityID = communityID;
+            }
             if (_db.DataBase.Connection.Database == dbName)
             {
                 return _db;
@@ -63,12 +105,13 @@ namespace IRAPBase
             return DBContextFactory.Instance.CreateContext(dbName + "Context");
         }
         /// <summary>
-        /// 获取一棵树，主数据库用这个类就可以了。
+        /// 获取一棵树，主数据库用这个类就可以了
         /// </summary>
         /// <param name="communityID">社区</param>
         /// <param name="treeID">树标识</param>
         /// <param name="leafID">叶标识</param>
         /// <returns></returns>
+       
         public IRAPTreeBase GetIRAPTreeBase(int communityID, int treeID, int leafID)
         {
             _communityID = communityID;
@@ -76,6 +119,32 @@ namespace IRAPBase
             _leafID = leafID;
             _irapTreeBase = new IRAPTreeBase(_db, _communityID, _treeID, _leafID);
             return _irapTreeBase;
+        }
+
+
+        /// <summary>
+        /// 获取一棵树，主数据库用这个类就可以了（默认社区）
+        /// </summary>
+        /// <param name="treeID"></param>
+        /// <param name="leafID"></param>
+        /// <returns></returns>
+        public IRAPTreeBase GetIRAPTreeBase( int treeID, int leafID)
+        {
+            if (_communityID==0)
+            _treeID = treeID;
+            _leafID = leafID;
+            _irapTreeBase = new IRAPTreeBase(_db, _communityID, _treeID, _leafID);
+            return _irapTreeBase;
+        }
+        /// <summary>
+        /// 业务操作类：申请交易号，保存事实，查询事实等
+        /// </summary>
+        /// <param name="access_token"></param>
+        /// <param name="opID"></param>
+        /// <returns></returns>
+        public IRAPOperBase GetIRAPOperBase(string access_token,int opID)
+        {
+            return new IRAPOperBase(_db, access_token, opID);
         }
         /// <summary>
         /// 使用动态类型返回结果
@@ -106,8 +175,6 @@ namespace IRAPBase
             }
             return d;
         }
-
-
         /// <summary>
         /// 把输入json参数解析为数组
         /// </summary>
@@ -134,6 +201,27 @@ namespace IRAPBase
         {
             return JsonConvert.DeserializeObject<T>(inparam);
         }
+
+        /// <summary>
+        /// 解析Json数组:格式举例: [{ "ID":1},{"ID":2}]
+        /// </summary>
+        /// <param name="inputJson">输入的json参数</param>
+        /// <returns></returns>
+        public virtual JArray GetJArray(string inputJson)
+        {
+            return  JArray.Parse(inputJson);
+        }
+
+        /// <summary>
+        /// 获取Json对象：格式举例: {Data:"good",List:[{"ID":1},{"ID":1}]}
+        /// </summary>
+        /// <param name="inputJson"></param>
+        /// <returns></returns>
+        public virtual JObject GetJObject(string inputJson)
+        {
+            return JObject.Parse(inputJson);
+        }
+
         #endregion
 
         /// <summary>
@@ -153,8 +241,11 @@ namespace IRAPBase
         {
             return JsonConvert.SerializeObject(BackResult);
         }
-
-
+        /// <summary>
+        /// 验证令牌（这部分已有框架完成）这里仅供参考
+        /// </summary>
+        /// <param name="access_token">令牌</param>
+        /// <returns>通用错误</returns>
         public IRAPError VerifyToken(string access_token)
         {
             LoginEntity loginfo = GetLoginInfo(access_token);
@@ -223,6 +314,16 @@ namespace IRAPBase
             return new Repository<T>(_db);
 
         }
+
+        /// <summary>
+        /// 在当前数据库上下文中获取数据库实体
+        /// </summary>
+        /// <typeparam name="T">数据库实体泛型</typeparam>
+        /// <returns>数据库实体集合</returns>
+        public IDbSet<T> GetTableSet<T>() where T: BaseEntity
+        {
+            return _db.Set<T>();
+        }
         /// <summary>
         /// 执行个性化sql
         /// </summary>
@@ -235,6 +336,13 @@ namespace IRAPBase
             return _db.DataBase.SqlQuery<T>(sqlQueryCommand, parameters).ToList();
         }
 
+        /// <summary>
+        /// 使用自定义SQL语句查询
+        /// </summary>
+        /// <param name="t">实体类型</param>
+        /// <param name="sqlQueryCommand">自定义sql</param>
+        /// <param name="parameters">参数列表用逗号隔开</param>
+        /// <returns></returns>
         public IEnumerable SqlQuery(Type t, string sqlQueryCommand, params object[] parameters)
         {
             return _db.DataBase.SqlQuery(t, sqlQueryCommand, parameters);
@@ -274,7 +382,6 @@ namespace IRAPBase
             _db.DataBase.ExecuteSqlCommandAsync(sqlCommand, parameters);
         }
 
-
         /// <summary>
         /// 使用原始sql语句生成DataTable（仅支持SQLServer)
         /// </summary>
@@ -305,7 +412,6 @@ namespace IRAPBase
             conn.Dispose();
             return table;
         }
-
 
         #region 事务控制
         /// <summary>

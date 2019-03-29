@@ -11,6 +11,10 @@ namespace IRAPBase.Entities
     /// </summary>
     public class BaseAuxFact : BaseEntity
     {
+        public BaseAuxFact()
+        {
+            WFInstanceID = "";
+        }
         public long FactID { get; set; }
         public long PartitioningKey { get; set; }
         public long FactPartitioningKey { get; set; }

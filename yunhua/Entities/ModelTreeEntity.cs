@@ -1,16 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
-    //树的模型
+ 
+    /// <summary>
+    /// 树模型的实体
+    /// </summary>
     [Table("stb051")]
     public class ModelTreeEntity:BaseEntity
     {
+        public ModelTreeEntity()
+        {
+            TreeType = 2;
+            EntityAttrTBName = "";
+            NodeAttrTBName = "";
+            ProcOnNodeChange = "";
+            ProcOnAttrSave = "";
+            ProcOnETL = "";
+            StatisticRule = "";
+            LastUpdatedTime = DateTime.Now;
+            DefaultIDNavigationSetting = "";
+            DefaultAttrMgmtSetting = "";
+            DefaultTVCtrlParameters = "";
+        }
         public Int16 TreeID { get; set; }
         public int NameID { get; set; }
         public int LeafLimit { get; set; }
@@ -52,7 +70,26 @@ namespace IRAPBase.Entities
         public string DefaultTVCtrlParameters { get; set; }
 
         //关联名称空间表
-
     }
- 
+
+    /// <summary>
+    /// 树模型的映射
+    /// </summary>
+    public class ModelTreeEntityMap : EntityTypeConfiguration<ModelTreeEntity>
+    {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ModelTreeEntityMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t =>  t.TreeID);
+            // Property(t => t.TreeID).IsRequired();
+            Property(t => t.TreeID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
+
+
 }
