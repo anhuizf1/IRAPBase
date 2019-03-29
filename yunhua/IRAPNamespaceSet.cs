@@ -15,7 +15,7 @@ namespace IRAPBase
     public interface IIRAPNamespaceSet
     {
         /// <summary>
-        /// 查找指定名称的名称标识
+        /// 查找指定名称的名称标识，如果指定名称不存在则新增
         /// </summary>
         /// <param name="communityID">社区标识</param>
         /// <param name="nameDescription">名称</param>
@@ -138,7 +138,7 @@ namespace IRAPBase
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文)</param>
         /// <returns>名称标识</returns>
-        public int GetNameID(
+        private int FindNameID(
             int communityID,
             string nameDescription,
             int languageID = 30)
@@ -152,26 +152,65 @@ namespace IRAPBase
             catch (Exception error)
             {
                 Console.WriteLine(
-                    $"获取资源库的时候发生错误: {error.Message}");
+                    $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}");
                 return 0;
             }
 
-            NameSpaceEntity entity =
-                names
-                    .Table
-                    .Where(
-                        p => p.LanguageID == languageID &&
-                        p.PartitioningKey == communityID * 10000 &&
-                        p.NameDescription == nameDescription)
-                    .FirstOrDefault();
-            if (entity == null)
+            try
             {
+                NameSpaceEntity entity =
+                    names
+                        .Table
+                        .Where(
+                            p => p.LanguageID == languageID &&
+                            p.PartitioningKey == communityID * 10000 &&
+                            p.NameDescription == nameDescription)
+                        .FirstOrDefault();
+                if (entity == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return entity.NameID;
+                }
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine(
+                    $"查找名称标识时发生错误：{error.Message}");
                 return 0;
             }
-            else
+        }
+
+        /// <summary>
+        /// 查找指定名称的名称标识
+        /// </summary>
+        /// <param name="communityID">社区标识</param>
+        /// <param name="nameDescription">名称</param>
+        /// <param name="languageID">语言标识 (默认: 30 简体中文)</param>
+        /// <returns>名称标识</returns>
+        public int GetNameID(
+            int communityID,
+            string nameDescription,
+            int languageID = 30)
+        {
+            int nameID = FindNameID(communityID, nameDescription, languageID);
+            if (nameID == 0)
             {
-                return entity.NameID;
+                IRAPError rtn =
+                    Add(
+                        communityID,
+                        nameDescription,
+                        languageID,
+                        out nameID);
+                if (rtn.ErrCode != 0)
+                {
+                    Console.WriteLine(rtn.ErrText);
+                }
             }
+
+            return nameID;
         }
 
         /// <summary>
@@ -189,7 +228,7 @@ namespace IRAPBase
             out int nameID)
         {
             nameID =
-                GetNameID(
+                FindNameID(
                     communityID,
                     nameDescription,
                     languageID);
@@ -211,7 +250,7 @@ namespace IRAPBase
                 }
                 catch (Exception error)
                 {
-                    string msg = $"获取资源库的时候发生错误: {error.Message}";
+                    string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                     Console.WriteLine(msg);
                     return
                         new IRAPError()
@@ -246,9 +285,9 @@ namespace IRAPBase
                     new SysNameSpaceEntity()
                     {
                         PartitioningKey = communityID * 10000,
+                        NameID = nameID,
                         LanguageID = (short)languageID,
                         NameDescription = nameDescription,
-                        NameID = nameID,
                     };
                 try
                 {
@@ -290,7 +329,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return
                     new IRAPError()
@@ -392,7 +431,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return
                     new IRAPError()
@@ -478,7 +517,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return null;
             }
@@ -508,7 +547,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return null;
             }
@@ -555,7 +594,7 @@ namespace IRAPBase
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文)</param>
         /// <returns>名称标识</returns>
-        public int GetNameID(
+        private int FindNameID(
             int communityID,
             string nameDescription,
             int languageID = 30)
@@ -569,26 +608,65 @@ namespace IRAPBase
             catch (Exception error)
             {
                 Console.WriteLine(
-                    $"获取资源库的时候发生错误: {error.Message}");
+                    $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}");
                 return 0;
             }
 
-            NameSpaceEntity entity =
-                names
-                    .Table
-                    .Where(
-                        p => p.LanguageID == languageID &&
-                        p.PartitioningKey == communityID * 10000 &&
-                        p.NameDescription == nameDescription)
-                    .FirstOrDefault();
-            if (entity == null)
+            try
             {
+                NameSpaceEntity entity =
+                    names
+                        .Table
+                        .Where(
+                            p => p.LanguageID == languageID &&
+                            p.PartitioningKey == communityID * 10000 &&
+                            p.NameDescription == nameDescription)
+                        .FirstOrDefault();
+                if (entity == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return entity.NameID;
+                }
+            }
+            catch (Exception error)
+            {
+                Console.WriteLine(
+                    $"查找名称标识时发生错误：{error.Message}");
                 return 0;
             }
-            else
+        }
+
+        /// <summary>
+        /// 查找指定名称的名称标识，若不存在则新增该名称。
+        /// </summary>
+        /// <param name="communityID">社区标识</param>
+        /// <param name="nameDescription">名称</param>
+        /// <param name="languageID">语言标识 (默认: 30 简体中文)</param>
+        /// <returns>名称标识</returns>
+        public int GetNameID(
+            int communityID,
+            string nameDescription,
+            int languageID = 30)
+        {
+            int nameID = FindNameID(communityID, nameDescription, languageID);
+            if (nameID == 0)
             {
-                return entity.NameID;
+                IRAPError rtn = 
+                    Add(
+                        communityID, 
+                        nameDescription, 
+                        languageID, 
+                        out nameID);
+                if (rtn.ErrCode == 0)
+                {
+                    return nameID;
+                }
             }
+
+            return nameID;
         }
 
         /// <summary>
@@ -606,7 +684,7 @@ namespace IRAPBase
             out int nameID)
         {
             nameID =
-                GetNameID(
+                FindNameID(
                     communityID,
                     nameDescription,
                     languageID);
@@ -628,7 +706,7 @@ namespace IRAPBase
                 }
                 catch (Exception error)
                 {
-                    string msg = $"获取资源库的时候发生错误: {error.Message}";
+                    string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                     Console.WriteLine(msg);
                     return
                         new IRAPError()
@@ -702,7 +780,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return
                     new IRAPError()
@@ -792,7 +870,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return
                     new IRAPError()
@@ -871,7 +949,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return null;
             }
@@ -895,7 +973,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                string msg = $"获取资源库的时候发生错误: {error.Message}";
+                string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
                 Console.WriteLine(msg);
                 return null;
             }
