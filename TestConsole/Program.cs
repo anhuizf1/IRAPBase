@@ -141,7 +141,8 @@ namespace TestConsole
             //userlist.SaveChanges();
 
 
-           IRAPTreeSet tree2 = new IRAPTreeSet(57280, 1);
+           
+     
             // IRAPTreeNodes treeNodes = tree.AccessibleTreeView(-1, -2);
             int errCode;
             string errText;
@@ -150,16 +151,9 @@ namespace TestConsole
             // PrintTree(treeNodes, ref i);
             //Console.WriteLine("总数：{0}", treeNodes.Count);
            
-            List<TreeViewDTO> treeList = tree2.TreeView(out errCode, out errText);
-
-            foreach (TreeViewDTO r in treeList)
-            {
-                Console.WriteLine(new string('-', r.NodeDepth * 2) + (r.NodeID < 0 ? "-" : "+") + "{2}-{0}[{1}]", r.NodeID, r.NodeCode, r.NodeName);
-            }
            // IRAPTree tree3 = new IRAPTree(57280, 1, 1);
            // var list3 = tree3.GetRowSet(1).Cast<RowSet_T1R1>();
  
-          
             // list3.AsQueryable<RowSet_T1R1>();
             //var query = from p in list3.AsQueryable<BaseRowAttrEntity>().Where(c=>c.EntityID==1).Select(c=>c.EntityID);
             //foreach (var r in list3)
@@ -203,10 +197,11 @@ namespace TestConsole
             //}
             // Test();
 
-       
-           testbiz.Test();
-
-
+            //  string aesString= Encoding.UTF8.GetString( IRAPUser.GetBinaryPasswordAES("123456" ));
+            IDbContext db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            IRAPTreeBase treeBase = new IRAPTreeBase(db, 57280, 1,1);
+             
+           // testbiz.Test();
             Console.ReadKey();          
         }
 

@@ -63,6 +63,7 @@ namespace IRAPBase.DTO
     public class ClassifyDTO
     {
         public int Ordinal { get; set; }
+        public int AttrTreeID { get; set; }
         public int A4LeafID { get; set; }
         public string A4Code { get; set; }
         public string A4AlternateCode { get; set; }

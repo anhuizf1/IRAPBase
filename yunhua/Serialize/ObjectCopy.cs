@@ -80,9 +80,9 @@ namespace IRAPBase.Serialize
             }
         }
 
-        public static string GetTBLName(BaseEntity a)
+        public static string GetTBLName(Type type)
         {
-            Type type = a.GetType();
+           // Type type = a.GetType();
             try
             {
                 TableAttribute temp = (TableAttribute)type.GetCustomAttributes(typeof(TableAttribute), false).First();

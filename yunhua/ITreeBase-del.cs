@@ -10,7 +10,8 @@ namespace IRAPBase
     /// <summary>
     /// 实现树的个性化部分接口（个性化的树继承此接口）作废不用了
     /// </summary>
-    public interface ITreeBase
+   /*
+    *public interface ITreeBase
     {
         IQueryable<BaseRowAttrEntity> GetRowAttr(int ordinal);
         IQueryable<BaseGenAttrEntity> GetGenAttr();
@@ -20,7 +21,7 @@ namespace IRAPBase
         IRAPError SaveRSAttr(List<BaseRowAttrEntity> list);
     }
 
-
+    
     public class IRAPTree1 : ITreeBase
     {
 
@@ -101,5 +102,5 @@ namespace IRAPBase
                 return error;
             }
         }
-    } 
+    } */
 }

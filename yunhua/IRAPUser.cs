@@ -13,6 +13,9 @@ using System.Configuration;
 
 namespace IRAPBase
 {
+    /// <summary>
+    /// 对单用户操作的类
+    /// </summary>
     public class IRAPUser
     {
         private string _userCode = string.Empty;
@@ -20,19 +23,32 @@ namespace IRAPBase
         private UnitOfWork _unitOfWork;
         private IRAPUserEntity user = null;
         private Repository<IRAPUserEntity> _users;
+        /// <summary>
+        /// 分区键值CommunityID*10000
+        /// </summary>
         public long PK { get { return _communityID * 10000L; } }
 
+        /// <summary>
+        /// 此用户的实体对象
+        /// </summary>
         public IRAPUserEntity User { get { return user; } }
+
+        //此用户的用户集合
         public Repository<IRAPUserEntity> Repository { get { return _users; } }
 
         #region 构造函数
+        /*
         public IRAPUser()
         {
 
             _unitOfWork = new UnitOfWork(new IRAPSqlDBContext("IRAPContext"));
             _users = _unitOfWork.Repository<IRAPUserEntity>();
-        }
-
+        }*/
+        /// <summary>
+        /// 用户类的构造函数
+        /// </summary>
+        /// <param name="userCode">用户代码</param>
+        /// <param name="communityID">社区标识</param>
         public IRAPUser(string userCode, long communityID)
         {
             this._userCode = userCode;
@@ -50,10 +66,9 @@ namespace IRAPBase
         #endregion
 
         /// <summary>
-        /// 修改用户
+        /// 修改用户的实体User调用此方法保存生效
         /// </summary>
         /// <returns></returns>
-
         public IRAPError Modify()
         {
          
@@ -73,6 +88,10 @@ namespace IRAPBase
             }
         }
 
+        /// <summary>
+        /// 删除此用户
+        /// </summary>
+        /// <returns></returns>
         public IRAPError Delete()
         {
             if (user == null)
@@ -93,6 +112,10 @@ namespace IRAPBase
 
         #region //获取机构清单
 
+        /// <summary>
+        /// 获取此用户所属机构清单
+        /// </summary>
+        /// <returns></returns>
         public BackLeafSetDTO GetAgencyList()
         {
             BackLeafSetDTO backRes = new BackLeafSetDTO();
@@ -131,6 +154,10 @@ namespace IRAPBase
         #endregion
         #region //获取角色清单
 
+        /// <summary>
+        /// 获取此用户所属角色清单
+        /// </summary>
+        /// <returns></returns>
         public BackLeafSetDTO GetRoleList()
         {
             BackLeafSetDTO backRes = new BackLeafSetDTO();
@@ -170,6 +197,17 @@ namespace IRAPBase
         #endregion
 
         #region //用户登录
+        /// <summary>
+        /// 用户登录
+        /// </summary>
+        /// <param name="clientID">渠道标识</param>
+        /// <param name="plainPWD">密码（明文）</param>
+        /// <param name="veriCode">验证码</param>
+        /// <param name="stationID">站点标识，如果是BS系统调用传CommunityID</param>
+        /// <param name="ipAddress">IP地址</param>
+        /// <param name="agencyLeaf">机构标识</param>
+        /// <param name="roleLeaf">角色标识</param>
+        /// <returns>返回信息DTO类</returns>
         public BackLoginInfo Login(string clientID, string plainPWD, string veriCode, string stationID, string ipAddress, int agencyLeaf, int roleLeaf)
         {
             BackLoginInfo backRes = new BackLoginInfo
@@ -246,7 +284,12 @@ namespace IRAPBase
             }
         }
         #endregion
-        #region //验证密码
+        #region  
+        /// <summary>
+        /// 验证密码类
+        /// </summary>
+        /// <param name="pwd">密码（明文）</param>
+        /// <returns>验证结果</returns>
         public IRAPError VerifyPWD(string pwd)
         {
             IRAPError error = new IRAPError();
@@ -266,12 +309,40 @@ namespace IRAPBase
         #endregion
 
 
-        #region //密码md5处理
+        #region  
+        /// <summary>
+        /// 密码md5算法(用户密码加密默认此方法)
+        /// </summary>
+        /// <param name="passWord"></param>
+        /// <returns></returns>
         public static byte[] GetBinaryPassword(string passWord)
         {
-
             string backRes = IRAPCommon.IRAPMD5.MD5(passWord);
+            return Encoding.UTF8.GetBytes(backRes);
+            //sfn_GetBinaryOfUserPassword
+        }
 
+        /// <summary>
+        /// DES加密算法
+        /// </summary>
+        /// <param name="passWord"></param>
+        /// <returns></returns>
+        public static byte[] GetBinaryPasswordDES(string passWord)
+        {
+          
+            string backRes = IRAPCommon.IRAPDES.EncryptDES(passWord,"chinairapchinairap");
+
+            return Encoding.UTF8.GetBytes(backRes);
+            //sfn_GetBinaryOfUserPassword
+        }
+        /// <summary>
+        /// AES算法
+        /// </summary>
+        /// <param name="passWord"></param>
+        /// <returns></returns>
+        public static byte[] GetBinaryPasswordAES(string passWord)
+        {
+            string backRes =  IRAPCommon.IRAPAES.Encrypt(passWord, "chinairap", "chinairap");
             return Encoding.UTF8.GetBytes(backRes);
             //sfn_GetBinaryOfUserPassword
         }
