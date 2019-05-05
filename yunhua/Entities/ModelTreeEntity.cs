@@ -29,6 +29,7 @@ namespace IRAPBase.Entities
             DefaultAttrMgmtSetting = "";
             DefaultTVCtrlParameters = "";
         }
+        [DatabaseGenerated(System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption.None)]
         public Int16 TreeID { get; set; }
         public int NameID { get; set; }
         public int LeafLimit { get; set; }
@@ -59,7 +60,7 @@ namespace IRAPBase.Entities
         public string ProcOnAttrSave { get; set; }
         public string ProcOnETL { get; set; }
         public string StatisticRule { get; set; }
-        public DateTime LastUpdatedTime { get; set; }
+        public DateTime? LastUpdatedTime { get; set; }
         public int ClassifyingAttrNameID { get; set; }
         public int StateAttrNameID { get; set; }
         public int InstantaneousAttrNameID { get; set; }

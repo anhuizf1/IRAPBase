@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Entities\AuxFact_PMO.cs" />
     <Compile Include="Entities\EGenAttr_T102.cs" />
+    <Compile Include="Entities\T271R4.cs" />
     <Compile Include="EUTB_Test.cs" />
     <Compile Include="IRAPBizTest.cs" />
     <Compile Include="Program.cs" />
@@ -81,6 +82,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IRAPCommon\IRAPCommon.csproj">
+      <Project>{4576c7bc-b80e-4dde-8508-8cb549eb8134}</Project>
+      <Name>IRAPCommon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IRAPMES\IRAPMES.csproj">
       <Project>{c4525c0c-f0a2-47cc-83a4-ff00a24c7008}</Project>
       <Name>IRAPMES</Name>

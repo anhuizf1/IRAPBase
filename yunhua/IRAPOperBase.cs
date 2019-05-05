@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IRAPBase.Entities;
 using System.Data.Entity;
+using IRAPBase.Serialize;
 
 namespace IRAPBase
 {
@@ -20,7 +21,7 @@ namespace IRAPBase
         private string access_token = string.Empty;
         private int _communityID = 0;
         protected IDbContext _db = null;
-
+        private LoginEntity log = null;
         /// <summary>
         /// 根据实体类型获取存储对象DbSet,以便操作实体（增删改查）
         /// </summary>
@@ -76,15 +77,16 @@ namespace IRAPBase
         /// <param name="opID"></param>
         public IRAPOperBase(string dbName, string access_token, int opID)
         {
-       
             _opID = opID;
             _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
             this.access_token = access_token;
-            _communityID = new IRAPLog().GetCommunityID(access_token);
+            var logDB = new IRAPLog();
+            _communityID = logDB.GetCommunityID(access_token);
             if (_communityID == 0)
             {
                 throw new Exception($"令牌access_token={access_token}无效！");
             }
+            log = logDB.GetLogIDByToken(access_token);
         }
         /// <summary>
         /// 构造函数
@@ -97,11 +99,13 @@ namespace IRAPBase
             _db = db;
             _opID = opID;
             this.access_token = access_token;
-            _communityID = new IRAPLog().GetCommunityID(access_token);
+            var logDB = new IRAPLog();
+            _communityID = logDB.GetCommunityID(access_token);
             if (_communityID == 0)
             {
                 throw new Exception($"令牌access_token={access_token}无效！");
             }
+            log = logDB.GetLogIDByToken(access_token);
         }
 
         /// <summary>
@@ -134,7 +138,6 @@ namespace IRAPBase
                 {
                     opNodes = (-_opID).ToString();
                 }
-                LoginEntity log = new IRAPLog().GetLogIDByToken(access_token);
                 if (log == null)
                 {
                     throw new Exception("申请交易号时出错，令牌无效！");
@@ -281,7 +284,13 @@ namespace IRAPBase
         }
 
 
-        public IRAPError CheckTransact(long transactNo, string userCode)
+        /// <summary>
+        /// 复核交易
+        /// </summary>
+        /// <param name="transactNo"></param>
+        /// <param name="userCode"></param>
+        /// <returns></returns>
+        public IRAPError CheckTransact(long transactNo)
         {
             TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
 
@@ -289,11 +298,78 @@ namespace IRAPBase
             {
                 throw new Exception($"交易号：{t1.TransactNo} 不存在！");
             }
-            t1.Checked = userCode;
+            t1.Checked = log.UserCode;
             t1.OkayTime = DateTime.Now;
             t1.Status = 3;
             SaveChanges();
             return new IRAPError(0,"交易复核成功！");
+        }
+        /// <summary>
+        /// 交易撤销到回收站
+        /// </summary>
+        /// <param name="transactNo"></param>
+        /// <returns></returns>
+        public IRAPError DeleteToRecycle(long transactNo)
+        {
+            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
+
+            if (t1 == null)
+            {
+                throw new Exception($"交易号：{t1.TransactNo} 不存在！");
+            }
+            if (t1.Status>3)
+            {
+                throw new Exception($"交易号：{t1.TransactNo} 已被撤销或已被固化！{t1.Status}");
+            }
+            t1.Revoker = log.UserCode;
+            t1.RevokeTime = DateTime.Now;
+            t1.Status = 4;
+            //移动到Recycle
+           var list=  GetEntities<FactEntity>().Where(c => c.PartitioningKey == FactPK && c.TransactNo == transactNo);
+
+            int i = 0;
+            foreach(var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[撤销]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i==0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
+            SaveChanges();
+            return new IRAPError(0, "交易撤销成功！");
+        }
+        /// <summary>
+        /// 删除主事实
+        /// </summary>
+        /// <param name="factID"></param>
+        /// <returns></returns>
+        public IRAPError DeleteToRecycleByFactID(long factID)
+        {
+             
+            //移动到Recycle
+            var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == FactPK && c.FactID == factID);
+            int i = 0;
+            foreach (var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[删除]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i == 0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
+            SaveChanges();
+            return new IRAPError(0, "事实删除成功！");
         }
         /// <summary>
         /// 提交变更到数据库
@@ -377,6 +453,16 @@ namespace IRAPBase
         //查询辅助事实
         //查询行集事实
 
+        /// <summary>
+        /// 计算PK值
+        /// </summary>
+        /// <param name="communityID">社区标识</param>
+        /// <param name="treeID">树标识</param>
+        /// <returns></returns>
+        public static long PartitioningKey(int communityID , int treeID)
+        {
+            return communityID * 10000L + treeID;
+        }
         /// <summary>
         /// 交易日志、辅助交易表分区键值
         /// </summary>

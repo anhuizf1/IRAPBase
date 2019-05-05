@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 namespace IRAPBase
 {
-    /// <summary>
-    /// 实现树的个性化部分接口（个性化的树继承此接口）作废不用了
-    /// </summary>
+ 
+   //实现树的个性化部分接口（个性化的树继承此接口）作废不用了
+    
    /*
     *public interface ITreeBase
     {

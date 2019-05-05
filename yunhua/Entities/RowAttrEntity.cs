@@ -8,6 +8,8 @@ namespace IRAPBase.Entities
 {
     public class BaseRowAttrEntity : BaseEntity
     {
+
+      
         public long PartitioningKey { get; set; }
         public int EntityID { get; set; }
         public int Ordinal { get; set; }

@@ -1,6 +1,7 @@
 ﻿using IRAPBase.Entities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace TestConsole.Entities
     /// <summary>
     /// 产品实体
     /// </summary>
+    [Table("GenAttr_T102")]
     public class EGenAttr_T102 : BaseGenAttrEntity
     {
         /// <summary>
@@ -70,7 +72,7 @@ namespace TestConsole.Entities
         public EGenAttr_T102Map()
         {
             //表定义
-            ToTable("GenAttr_T102");
+           // ToTable("GenAttr_T102");
             HasKey(t => new { t.PartitioningKey, t.EntityID });
 
             //设置实体属性 为空检查

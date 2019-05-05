@@ -158,7 +158,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal });
+            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal,t.VersionLE });
            // Property(t => t.TreeID).IsRequired();
             Property(t => t.A4LeafID).IsRequired();
             Property(t => t.LeafID).IsRequired();
@@ -172,7 +172,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal });
+            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal ,t.VersionLE});
 
             Property(t => t.Ordinal).IsRequired();
             Property(t => t.LeafID).IsRequired();

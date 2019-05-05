@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using IRAPBase;
 using IRAPBase.Entities;
 using IRAPBase.DTO;
+using System.Reflection;
+using IRAPBase.Serialize;
+using System.Data.SqlClient;
 
 namespace IRAPBase
 {
@@ -27,7 +30,10 @@ namespace IRAPBase
         private IQueryable<TreeStatus> _treeStatus;
         private IQueryable<NameSpaceEntity> _nameSpace;
         private long[] _PKDict;
- 
+        protected List<TreeClassifyModelDTO> _treeClassModel = null;
+        protected List<TreeTransientModelDTO> _treeTransientModel = null;
+        protected List<TreeStatusModelDTO> _treeStatusModel = null;
+        protected IRAPTreeModel _treeModel = null;
         /// <summary>
         /// 树标识
         /// </summary>
@@ -35,7 +41,7 @@ namespace IRAPBase
         /// <summary>
         /// 分区键
         /// </summary>
-        public long PK { get { return _communityID * 10000L; } }
+        public long PK { get { return _communityID * 10000L + _treeID; } }
 
         #region 属性
         /// <summary>
@@ -54,12 +60,12 @@ namespace IRAPBase
         /// 4分类属性
         /// </summary>
         public IQueryable<TreeClassEntity> ClassEntities { get { return _treeClass; } }
- 
+
         /// <summary>
         /// 5.瞬态属性
         /// </summary>
         public IQueryable<TreeTransient> TransientEntities { get { return _treeTrans; } }
- 
+
         /// <summary>
         /// 6.状态属性
         /// </summary>
@@ -75,8 +81,6 @@ namespace IRAPBase
         public IRAPTreeSet(int communityID, int treeID)
         {
             _treeID = treeID;
-            _communityID = communityID;
-            _PKDict = new long[] { PK + _treeID, _treeID };
             string dbConnectStr = string.Empty;
             if (_treeID <= 100)
             {
@@ -86,37 +90,64 @@ namespace IRAPBase
             {
                 dbConnectStr = "IRAPMDMContext";
             }
-            accessibleNodes = new List<IRAPTreeNodes>();
             context = new IRAPSqlDBContext(dbConnectStr);
+            Init(context, communityID, treeID);
+        }
+        /// <summary>
+        /// 有数据库上下文的构造函数
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="communityID"></param>
+        /// <param name="treeID"></param>
+        public IRAPTreeSet(IDbContext db, int communityID, int treeID)
+        {
+            Init(db, communityID, treeID);
+        }
+        private void Init(IDbContext db, int communityID, int treeID)
+        {
+            _treeID = treeID;
+            _communityID = communityID;
+            _PKDict = new long[] { PK, _treeID };
+            accessibleNodes = new List<IRAPTreeNodes>();
+            context = db;
             if (_treeID <= 100)
             {
                 nodes = new Repository<ETreeSysDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-                leaves = new Repository<ETreeSysLeaf>(context).Table.Where(c => c.PartitioningKey == PK + _treeID && c.TreeID == _treeID);
+                leaves = new Repository<ETreeSysLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
                 //加载分类属性
-                _treeClass = context.Set<ETreeSysClass>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeClass = context.Set<ETreeSysClass>().Where(c => c.PartitioningKey == PK);
                 //加载瞬态属性
-                _treeTrans = context.Set<ETreeSysTran>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeTrans = context.Set<ETreeSysTran>().Where(c => c.PartitioningKey == PK);
                 //加载状态属性
-                _treeStatus = context.Set<ETreeSysStatus>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeStatus = context.Set<ETreeSysStatus>().Where(c => c.PartitioningKey == PK);
                 //检索属性
                 _nameSpace = context.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == PK);
             }
             else
             {
                 nodes = new Repository<ETreeBizDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-                leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK + _treeID && c.TreeID == _treeID);
+                leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
                 //加载分类属性
-                _treeClass = context.Set<ETreeBizClass>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeClass = context.Set<ETreeBizClass>().Where(c => c.PartitioningKey == PK);
                 //加载瞬态属性
-                _treeTrans = context.Set<ETreeBizTran>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeTrans = context.Set<ETreeBizTran>().Where(c => c.PartitioningKey == PK);
                 //加载状态属性
-                _treeStatus = context.Set<ETreeBizStatus>().Where(c => c.PartitioningKey == PK + _treeID);
+                _treeStatus = context.Set<ETreeBizStatus>().Where(c => c.PartitioningKey == PK);
                 //检索属性
                 _nameSpace = context.Set<BizNameSpaceEntity>().Where(c => c.PartitioningKey == PK);
             }
+            //加载树模型
+            _treeModel = new IRAPTreeModel(_treeID);
         }
-
-
+        /// <summary>
+        /// 获取数据库表集
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
+        protected DbSet TableSet(BaseEntity t)
+        {
+            return context.GetSet(t.GetType());
+        }
         //7.一般属性
         /// <summary>
         /// 此树的所有一般属性集合
@@ -125,7 +156,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IQueryable<T> GenAttr<T>() where T : BaseGenAttrEntity
         {
-            return new Repository<T>(context).Table.Where(c => c.PartitioningKey == PK + _treeID);
+            return new Repository<T>(context).Table.Where(c => c.PartitioningKey == PK);
         }
         //8. 行集属性
 
@@ -136,7 +167,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IQueryable<T> RowSet<T>() where T : BaseRowAttrEntity
         {
-            return new Repository<T>(context).Table.Where(c => c.PartitioningKey == PK + _treeID);
+            return new Repository<T>(context).Table.Where(c => c.PartitioningKey == PK);
         }
         #region 查询
         /// <summary>
@@ -235,6 +266,30 @@ namespace IRAPBase
             return GetPlainTreeData(rootTree);
         }
 
+        /// <summary>
+        /// 获取树视图（带权限带入口结点）
+        /// </summary>
+        /// <param name="entryNode"></param>
+        /// <param name="agencyNode"></param>
+        /// <param name="roleNode"></param>
+        /// <returns></returns>
+        public List<TreeViewDTO> AccessibleTreeView(int entryNode,int agencyNode, int roleNode)
+        {
+            IRAPGrant grant = new IRAPGrant(_communityID);
+            accessibleNodes.Clear();
+            List<EGrant> list = grant.GetGrantListByTree(_treeID, agencyNode, roleNode);
+
+            IRAPTreeNodes rootTree = TreeViewData(entryNode);
+
+            DownTree(rootTree, list);
+            foreach (var node in accessibleNodes)
+            {
+                UpTree(node);
+            }
+            //去掉不可访问的结点
+            RemoveNoAccessible(rootTree);
+            return GetPlainTreeData(rootTree);
+        }
         /// <summary>
         /// 获取树视图（根据令牌）
         /// </summary>
@@ -462,7 +517,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = 0;
+                node.Accessibility = 1;
                 node.AlternateCode = "";
                 root.Children.Add(node);
 
@@ -489,7 +544,7 @@ namespace IRAPBase
                 node.NodeCode = r.Code;
                 node.NodeName = r.NodeName;
                 node.NodeDepth = r.NodeDepth;
-                node.NodeStatus = 0;
+                node.NodeStatus = (byte)(r.LeafStatus > 0 ? 1 : 0);
                 node.NodeType = 4;
                 node.CSTRoot = r.CSTRoot;
                 node.UDFOrdinal = r.UDFOrdinal;
@@ -497,13 +552,15 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = 0;
+                node.Accessibility = 1;
                 node.AlternateCode = r.AlternateCode;
                 root.Children.Add(node);
             }
         }
 
         #endregion
+
+        /*
         /// <summary>
         /// 新增树结点
         /// </summary>
@@ -551,6 +608,554 @@ namespace IRAPBase
             IRAPTreeBase tree = new IRAPTreeBase(context, _communityID, _treeID);
             return tree.ModifyTreeNode(nodeType, nodeID, nodeName, nodeCode, englishName, alternateCode, modifiedBy, udfOrdinal);
         }
+        */
+
+        #region 新增或修改属性
+        /// <summary>
+        /// 新增节点或叶子
+        /// </summary>
+        /// <param name="fatherNode">父结点</param>
+        /// <param name="englishName">英文名称</param>
+        /// <param name="createBy">创建人</param>
+        /// <param name="nodeCode">结点代码</param>
+        /// <param name="alterNateCode">替代代码</param>
+        /// <param name="nodeName">结点名称</param>
+        /// <param name="udfOrdinal">位置序号</param>
+        /// <returns></returns>
+        private NewTreeNodeDTO NewNode(int fatherNode, string englishName, string createBy,
+            string nodeCode, string alterNateCode, string nodeName, float udfOrdinal = 0F)
+        {
+            NewTreeNodeDTO res = new NewTreeNodeDTO();
+
+            if (nodeName.Trim() == string.Empty)
+            {
+                res.ErrCode = 22;
+                res.ErrText = "结点名称不能为空！";
+                return res;
+            }
+            long[] pkDict = new long[2] { PK, _treeID };
+            res.PartitioningKey = PK;
+            try
+            {
+                TreeNodeEntity father = null;
+                if (fatherNode == 0)
+                {
+                    father = nodes.FirstOrDefault(r => pkDict.Contains(r.PartitioningKey));
+                    if (father != null)
+                    {
+                        res.ErrCode = 93;
+                        res.ErrText = "根节点已存在节点不允许创建根节点！FatherNode不能为0";
+                        return res;
+                    }
+                }
+                else
+                {
+                    father = nodes.FirstOrDefault(r => r.NodeID == fatherNode);
+                }
+                if (father == null && fatherNode != 0)
+                {
+                    res.ErrCode = 22;
+                    res.ErrText = $"传入的父结点：{fatherNode}不存在！";
+                    return res;
+                }
+                int nodeDepth = father == null ? 0 : father.NodeDepth + 1;
+
+                //实体代码唯一性防错
+                if (_treeModel.TreeEntity.UniqueNodeCode)
+                {
+                    if (nodes.Any(i => i.Code == nodeCode))
+                    {
+                        throw new Exception($"此树的结点代码不允许重复，代码 {nodeCode} 已经存在！");
+                    }
+                }
+
+                TreeNodeEntity e = new TreeNodeEntity
+                {
+                    PartitioningKey = PK,
+                    NameID = 0,
+                    IconID = 0,
+                    NodeDepth = (byte)nodeDepth,
+                    NodeID = 0, //申请
+                    NodeName = nodeName,
+                    NodeStatus = 0,
+                    TreeID = (short)_treeID,
+                    UDFOrdinal = udfOrdinal,
+                    Code = nodeCode,
+                    CSTRoot = 0,
+                    Father = fatherNode,
+                    DescInEnglish = englishName,
+                    CreatedBy = createBy,
+                    CreatedOn = DateTime.Now,
+                    ModifiedBy = "",
+                    ModifiedOn = DateTime.Now,
+                };
+                string seqName = "NextSysNodeID";
+                if (_treeID > 100)
+                {
+                    seqName = "NextUserNodeID";
+                }
+                SequenceValueDTO dto = IRAPSequence.GetSequence(seqName, 1);
+                if (dto.ErrCode != 0)
+                {
+                    res.ErrCode = dto.ErrCode;
+                    res.ErrText = dto.ErrText;
+                    return res;
+                }
+                e.NodeID = (int)dto.SequenceValue;
+                res.NewNodeID = e.NodeID;
+                res.NewEntityID = 0;
+                res.PartitioningKey = PK;
+                if (father != null)
+                {
+                    e.CSTRoot = father.NodeID == 0 ? e.NodeID : father.CSTRoot;
+                }
+                else
+                {
+                    e.CSTRoot = e.NodeID;
+                }
+
+                TreeNodeEntity c;
+                if (_treeID <= 100)
+                {
+                    c = e.CopyTo<ETreeSysDir>();
+                }
+                else
+                {
+                    c = e.CopyTo<ETreeBizDir>();
+                }
+                TableSet(c).Add(c);
+                context.SaveChanges();
+                res.ErrCode = 0;
+                res.ErrText = "结点创建成功！ ";
+                return res;
+            }
+            catch (Exception err)
+            {
+                //_db.RollBack();
+                res.ErrCode = 9999;
+                res.ErrText = $"创建结点发生错误:{err.Message}";
+                return res;
+            }
+        }
+
+        //新增叶子
+        private NewTreeNodeDTO NewLeaf(int fatherNode, string englishName, string createBy,
+            string nodeCode, string alterNateCode, string nodeName, float udfOrdinal = 0F)
+        {
+            NewTreeNodeDTO res = new NewTreeNodeDTO();
+            //long[] pkDict = new long[2] { PK, _treeID };
+            string seqLeafName = "NextSysLeafID";
+            string seqEntityName = "NextSysEntityID";
+
+            //实体代码唯一性防错
+            if (_treeModel.TreeEntity.UniqueEntityCode)
+            {
+                if ( leaves.Any(c=>c.Code== nodeCode))
+                {
+                    throw new Exception($"此树的实体代码不允许重复，代码 {nodeCode} 已经存在！");
+                }
+            }
+            try
+            {
+                TreeNodeEntity father = nodes.FirstOrDefault(r => r.NodeID == fatherNode);
+                if (father == null)
+                {
+                    res.ErrCode = 22;
+                    res.ErrText = $"父结点：{fatherNode}不存在！";
+                    return res;
+                }
+                TreeLeafEntity e = new TreeLeafEntity
+                {
+                    PartitioningKey = PK,
+                    NameID = 0,
+                    IconID = 0,
+                    AlternateCode = alterNateCode,
+                    NodeDepth = (byte)(father.NodeDepth + 1),
+                    LeafID = 0, //申请
+                    NodeName = nodeName,
+                    LeafStatus = 0,
+                    TreeID = (short)_treeID,
+                    UDFOrdinal = udfOrdinal,
+                    Code = nodeCode,
+                    CSTRoot = father.CSTRoot,
+                    Father = fatherNode,
+                    DescInEnglish = englishName,
+                    CreatedBy = createBy,
+                    CreatedOn = DateTime.Now,
+                    ModifiedBy = createBy,
+                    ModifiedOn = DateTime.Now
+                };
+                if (_treeID > 100)
+                {
+                    seqLeafName = "NextUserLeafID";
+                    seqEntityName = "NextUserEntityID";
+                }
+                SequenceValueDTO dto = IRAPSequence.GetSequence(seqLeafName, 1);
+                if (dto.ErrCode != 0)
+                {
+                    res.ErrCode = dto.ErrCode;
+                    res.ErrText = dto.ErrText;
+                    return res;
+                }
+                e.LeafID = (int)dto.SequenceValue;
+                SequenceValueDTO dto2 = IRAPSequence.GetSequence(seqEntityName, 1);
+                //为了保证LeafID与EntityID绝对一致性，用同一个序列值
+                e.EntityID = e.LeafID; // (int)dto2.SequenceValue;
+                TreeLeafEntity c;
+                if (_treeID <= 100)
+                {
+                    c = e.CopyTo<ETreeSysLeaf>();
+                }
+                else
+                {
+                    c = e.CopyTo<ETreeBizLeaf>();
+                }
+                TableSet(c).Add(c);
+                //初始化分类属性清单
+                if (_treeClassModel == null)
+                {
+                    _treeClassModel = _treeModel.GetClassify();
+                }
+                foreach (var r in _treeClassModel)
+                {
+                    TreeClassEntity t4Attr = new TreeClassEntity
+                    {
+                        AttrTreeID = (short)r.AttrTreeID,
+                        Ordinal = r.AttrIndex,
+                        LeafID = e.LeafID,
+                        PartitioningKey = PK,
+                        VersionLE = (int)(Math.Pow(2, 31) - 1),
+                        TransactNoLE = 9223372036854775807
+                    };
+                    TreeClassEntity t4e;
+                    TreeClassEntity t4eh;
+                    if (_treeID <= 100)
+                    {
+                        t4e = t4Attr.CopyTo<ETreeSysClass>();
+                        t4eh = t4Attr.CopyTo<ETreeSysClass_H>();
+                    }
+                    else
+                    {
+                        t4e = t4Attr.CopyTo<ETreeBizClass>();
+                        t4eh = t4Attr.CopyTo<ETreeBizClass_H>();
+                    }
+                    TableSet(t4e).Add(t4e);
+                    TableSet(t4eh).Add(t4eh);
+                }
+                //初始化瞬态属性
+                if (_treeTransientModel == null)
+                {
+                    _treeTransientModel = _treeModel.GetTransient();
+                }
+                foreach (var r in _treeTransientModel)
+                {
+                    TreeTransient t6Attr = new TreeTransient
+                    {
+                        AttrValue = 0,
+                        EntityID = e.EntityID,
+                        Scale = r.Scale,
+                        UnitOfMeasure = r.UnitOfMeasure,
+                        VersionLE = (int)(Math.Pow(2, 31) - 1),
+                        Ordinal = (byte)r.AttrIndex,
+                        PartitioningKey = PK
+                    };
+                    TreeTransient t6e;
+                    TreeTransient t6eh;
+                    if (_treeID <= 100)
+                    {
+                        t6e = t6Attr.CopyTo<ETreeSysTran>();
+                        t6eh = t6Attr.CopyTo<ETreeSysTran_H>();
+                    }
+                    else
+                    {
+                        t6e = t6Attr.CopyTo<ETreeBizTran>();
+                        t6eh = t6Attr.CopyTo<ETreeBizTran_H>();
+                    }
+                    TableSet(t6e).Add(t6e);
+                    TableSet(t6eh).Add(t6eh);
+                }
+                //初始化状态属性
+                if (_treeStatusModel == null)
+                {
+                    _treeStatusModel = _treeModel.GetStatus();
+                }
+                foreach (var r in _treeStatusModel)
+                {
+                    TreeStatus eAttr = new TreeStatus
+                    {
+                        EntityID = e.EntityID,
+                        T5LeafID = r.T5LeafID,
+                        StatusValue = 0,
+                        Ordinal = (byte)r.AttrIndex,
+                        PartitioningKey = PK
+                    };
+                    TreeStatus t5e;
+                    TreeStatus t5eh;
+                    if (_treeID <= 100)
+                    {
+                        t5e = eAttr.CopyTo<ETreeSysStatus>();
+                        t5eh = eAttr.CopyTo<ETreeSysStatus_H>();
+                    }
+                    else
+                    {
+                        t5e = eAttr.CopyTo<ETreeBizStatus>();
+                        t5eh = eAttr.CopyTo<ETreeBizStatus_H>();
+                    }
+                    TableSet(t5e).Add(t5e);
+                    TableSet(t5eh).Add(t5eh);
+                }
+                //初始化一般属性
+                DbContextTransaction tran = null;
+                bool isOutTran = false;
+                if (context.DataBase.CurrentTransaction == null)
+                {
+                    tran = context.DataBase.BeginTransaction();
+                }
+                else
+                {
+                    isOutTran = true;
+                    tran = context.DataBase.CurrentTransaction;
+                }
+                //using (var dbContextTransaction = context.DataBase.BeginTransaction())
+                // {
+                try
+                {
+                    context.SaveChanges();
+                    if (_treeModel.AttrTBLName.Length > 3)
+                    {
+                        //这里一段怀疑是与SQLServer数据库相关，如果切换其他类型数据库可能会有问题。
+                        context.DataBase.ExecuteSqlCommand($"insert into {_treeModel.AttrTBLName}(PartitioningKey ,EntityID) values(@p1,@p2)"
+                            , new SqlParameter("@p1", PK), new SqlParameter("@p2", e.EntityID));
+                    }
+                    if (!isOutTran)
+                    {
+                        tran.Commit();
+                    }
+                    res.NewNodeID = e.LeafID;
+                    res.NewEntityID = e.LeafID;
+                    res.PartitioningKey = PK;
+                    res.ErrCode = 0;
+                    res.ErrText = $"新增叶结点成功！叶结点标识：{e.LeafID} ";
+                }
+                catch (Exception err)
+                {
+                    tran.Rollback();
+                    res.ErrCode = 9999;
+                    res.ErrText = $"新增叶结点失败！原因是：{err.Message} ";
+                }
+                // }
+                return res;
+            }
+            catch (Exception err)
+            {
+                res.ErrCode = 9999;
+                res.ErrText = $"创建叶子时发生错误:{err.Message}";
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// 新增结点或叶
+        /// </summary>
+        /// <param name="nodeType">结点类型：3-结点 4-叶子</param>
+        /// <param name="fatherNode">父结点标识</param>
+        /// <param name="nodeName">结点(叶)名称</param>
+        /// <param name="nodeCode">结点(叶)代码</param>
+        /// <param name="createBy">创建人代码</param>
+        /// <param name="alterNateCode">替代代码</param>
+        /// <param name="englishName">英文名称</param>
+        /// <param name="udfOrdinal">插入位置序号</param>
+        /// <returns></returns>
+        public NewTreeNodeDTO NewTreeNode(int nodeType, int fatherNode,
+            string nodeName, string nodeCode, string createBy, string alterNateCode = "", string englishName = "", float udfOrdinal = 0F)
+        {
+            fatherNode = Math.Abs(fatherNode);
+            NewTreeNodeDTO res = new NewTreeNodeDTO();
+            if (nodeType == 3)
+            {
+                return NewNode(fatherNode, englishName, createBy, nodeCode, alterNateCode, nodeName, udfOrdinal);
+            }
+            else if (nodeType == 4)
+            {
+                return NewLeaf(fatherNode, englishName, createBy, nodeCode, alterNateCode, nodeName, udfOrdinal);
+            }
+            else
+            {
+                res.ErrCode = 91;
+                res.ErrText = "您传入的参数NodeType不正确，3=结点 4=叶子，其他类型不支持！";
+                res.NewNodeID = 0;
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// 修改结点或叶子
+        /// </summary>
+        /// <param name="nodeType">结点类型：3-结点 4-叶子</param>
+        /// <param name="nodeID">结点标识</param>
+        /// <param name="nodeName">名称</param>
+        /// <param name="nodeCode">代码</param>
+        /// <param name="englishName">英文名称</param>
+        /// <param name="alternateCode">替代代码</param>
+        /// <param name="modifiedBy">修改人代码</param>
+        /// <param name="udfOrdinal">序号</param>
+        /// <returns></returns>
+        public IRAPError ModifyTreeNode(int nodeType, int nodeID, string nodeName, string nodeCode = "", string englishName = "", string alternateCode = "", string modifiedBy = "", float udfOrdinal = 1F)
+        {
+            IRAPError error = new IRAPError();
+            try
+            {
+                if (nodeName == string.Empty)
+                {
+                    error.ErrCode = 23;
+                    error.ErrText = $"结点名称不能为空！";
+                    return error;
+                }
+                if (nodeID < 0)
+                {
+                    nodeID = -nodeID;
+                }
+                if (nodeType == 3)
+                {
+                    var thisNode = nodes.FirstOrDefault(r => r.NodeID == nodeID);
+                    if (thisNode == null)
+                    {
+                        error.ErrCode = 22;
+                        error.ErrText = $"结点标识：{nodeID}不存在或无权限修改！";
+                        return error;
+                    }
+                    if (_treeModel.TreeEntity.UniqueNodeCode)
+                    {
+                        if (nodes.Any(i => i.Code == nodeCode && i.NodeID!= nodeID))
+                        {
+                            throw new Exception($"此树的结点代码不允许重复，代码 {nodeCode} 已经存在！");
+                        }
+                    }
+                    thisNode.Code = nodeCode;
+                    thisNode.NodeName = nodeName;
+                    thisNode.UDFOrdinal = udfOrdinal;
+                    thisNode.DescInEnglish = englishName;
+                    thisNode.ModifiedOn = DateTime.Now;
+                    thisNode.ModifiedBy = modifiedBy;
+                    context.SaveChanges();
+                }
+                else if (nodeType == 4)
+                {
+                    var thisNode = leaves.FirstOrDefault(r => r.LeafID == nodeID );
+                    if (thisNode == null)
+                    {
+                        error.ErrCode = 22;
+                        error.ErrText = $"结点标识：{nodeID}不存在！";
+                        return error;
+                    }
+
+                    if (_treeModel.TreeEntity.UniqueEntityCode)
+                    {
+                        if (leaves.Any(i => i.Code == nodeCode&& i.LeafID!= nodeID))
+                        {
+                            throw new Exception($"此树的实体代码不允许重复，代码 {nodeCode} 已经存在！");
+                        }
+                    }
+
+                    thisNode.Code = nodeCode;
+                    thisNode.AlternateCode = alternateCode;
+                    thisNode.NodeName = nodeName;
+                    thisNode.UDFOrdinal = udfOrdinal;
+                    thisNode.DescInEnglish = englishName;
+                    thisNode.ModifiedBy = modifiedBy;
+                    thisNode.ModifiedOn = DateTime.Now;
+                    thisNode.AlternateCode = alternateCode;
+                    context.SaveChanges();
+                }
+                else
+                {
+                    error.ErrCode = 91;
+                    error.ErrText = "您输入的参数NodeType仅支持3=结点 4=叶子，不支持的其他类型！";
+                    return error;
+                }
+                error.ErrCode = 0;
+                error.ErrText = "修改结点成功！";
+                return error;
+            }
+            catch (Exception err)
+            {
+                error.ErrCode = 9999;
+                error.ErrText = $"修改结点失败：{err.Message}";
+                return error;
+            }
+        }
+        /// <summary>
+        /// 删除结点或叶子
+        /// </summary>
+        /// <param name="nodeType">结点类型：3-结点 4-叶子</param>
+        /// <param name="nodeID">结点标识</param>
+        /// <returns></returns>
+        public IRAPError DeleteTreeNode(int nodeType, int nodeID)
+        {
+            IRAPError error = new IRAPError();
+            // long[] pkDict = new long[2] { PK, _treeID };
+            if (nodeID < 0)
+            {
+                nodeID = -nodeID;
+            }
+            try
+            {
+                if (nodeType == 3)
+                {
+                    var thisNode = nodes.FirstOrDefault(r => r.NodeID == nodeID);
+                    if (thisNode == null)
+                    {
+                        error.ErrCode = 22;
+                        error.ErrText = $"结点标识：{nodeID}不存在！";
+                        return error;
+                    }
+                    if (thisNode.PartitioningKey == _treeID)
+                    {
+                        error.ErrCode = 22;
+                        error.ErrText = $"结点标识：{nodeID}属于系统结点请从后台删除！";
+                        return error;
+                    }
+                    var tempNode = nodes.FirstOrDefault(c => c.Father == nodeID);
+                    if (tempNode != null)
+                    {
+                        error.ErrCode = 23;
+                        error.ErrText = $"结点“{tempNode.NodeName}”下面已有结点，请先删除子结点！";
+                        return error;
+                    }
+                    TableSet(thisNode).Remove(thisNode);
+                    context.SaveChanges();
+                }
+                else if (nodeType == 4)
+                {
+                    var thisNode = leaves.FirstOrDefault(r => r.LeafID == nodeID);
+                    if (thisNode == null)
+                    {
+                        error.ErrCode = 22;
+                        error.ErrText = $"叶结点标识：{nodeID}不存在！";
+                        return error;
+                    }
+                    TableSet(thisNode).Remove(thisNode);
+                    context.SaveChanges();
+                }
+                else
+                {
+                    error.ErrCode = 91;
+                    error.ErrText = "输入参数NodeType只允许=3 结点 =4 叶子 不支持其他的类型！";
+                    return error;
+                }
+                error.ErrCode = 0;
+                error.ErrText = "删除结点成功！";
+                return error;
+            }
+            catch (Exception err)
+            {
+                error.ErrCode = 9999;
+                error.ErrText = $"删除结点失败：{err.Message}";
+                return error;
+            }
+        }
+
+        #endregion 
         /// <summary>
         /// 根据指定分类属性获取叶子清单
         /// </summary>
@@ -559,7 +1164,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IQueryable<TreeLeafEntity> GetLeafSetByClassify(int ordinal, int cleafID)
         {
-            IQueryable<TreeClassEntity> treeClass = _treeClass.Where(c =>  c.A4LeafID == cleafID && c.Ordinal == ordinal);
+            IQueryable<TreeClassEntity> treeClass = _treeClass.Where(c => c.A4LeafID == cleafID && c.Ordinal == ordinal);
             return treeClass.Join(leaves, a => a.LeafID, b => b.LeafID, (a, b) => b);
         }
         /// <summary>
@@ -573,18 +1178,21 @@ namespace IRAPBase
         public static TreeLeafEntity GetLeafEntity(int communityID, int treeID, int leafID)
         {
             long pk = communityID * 10000L + treeID;
+            long[] pkDict = new long[] { pk, treeID };
             IDbContext db;
             if (treeID <= 100)
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPContext");
-                return db.Set<ETreeSysLeaf>().FirstOrDefault(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && leafID == c.LeafID);
+                return db.Set<ETreeSysLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
             }
             else
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
-                return db.Set<ETreeBizLeaf>().FirstOrDefault(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && leafID == c.LeafID);
+                return db.Set<ETreeBizLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
             }
         }
+
+
         /// <summary>
         /// 根据Code模糊找出叶子清单
         /// </summary>
@@ -675,7 +1283,7 @@ namespace IRAPBase
         /// </summary>
         public float UDFOrdinal { get; set; }
         /// <summary>
-        /// 结点状态
+        /// 结点状态-- =0 正常  =1 失效 小于0 未生效
         /// </summary>
         public byte NodeStatus { get; set; }
         /// <summary>

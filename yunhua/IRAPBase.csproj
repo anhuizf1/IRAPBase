@@ -42,6 +42,9 @@
     <Reference Include="Google.Protobuf, Version=3.7.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.7.0\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
+    <Reference Include="IRAPShared">
+      <HintPath>..\lib\IRAPShared.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=8.0.15.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.15\lib\net452\MySql.Data.dll</HintPath>
     </Reference>
@@ -71,16 +74,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DTO\BizModelDTO.cs" />
+    <Compile Include="DTO\SaveAttrDTO.cs" />
     <Compile Include="DTO\TreeModelDTO.cs" />
     <Compile Include="Entities\BaseAuxFact.cs" />
+    <Compile Include="Entities\BaseCorrAttr.cs" />
     <Compile Include="Entities\BaseRSFact.cs" />
     <Compile Include="Entities\GenAttrEntity.cs" />
     <Compile Include="Entities\GenAttr_T1.cs" />
+    <Compile Include="Entities\GenAttr_T4.cs" />
+    <Compile Include="Entities\IRAPTreeAttrEntity.cs" />
+    <Compile Include="Entities\ModelTreeCorrEntity.cs" />
     <Compile Include="Entities\RowAttrEntity.cs" />
     <Compile Include="Entities\RowSet_T1R1.cs" />
+    <Compile Include="Entities\RowSet_T4R1.cs" />
+    <Compile Include="Entities\RowSet_T4R2.cs" />
+    <Compile Include="Entities\RowSet_T4R3.cs" />
+    <Compile Include="Entities\RowSet_T4R4.cs" />
     <Compile Include="Extend.cs" />
+    <Compile Include="IRAPAssembly.cs" />
+    <Compile Include="IRAPBizModel.cs" />
+    <Compile Include="IRAPBizModelSet.cs" />
+    <Compile Include="IRAPTreeModel.cs" />
     <Compile Include="ITreeBase-del.cs" />
-    <Compile Include="IRAPBizBase.cs" />
+    <Compile Include="IRAPWorkbench.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Serialize\JsonHelper.cs" />
     <Compile Include="Serialize\ObjectCopy.cs" />
@@ -117,7 +134,7 @@
     <Compile Include="Entities\TreeClassfiy.cs" />
     <Compile Include="Entities\TreeNodeEntity.cs" />
     <Compile Include="Entities\TreeLeafEntity.cs" />
-    <Compile Include="Entities\TreeLevel.cs" />
+    <Compile Include="Entities\TreeLevelEntity.cs" />
     <Compile Include="Entities\TreeStatus.cs" />
     <Compile Include="Entities\TreeTransient.cs" />
     <Compile Include="IRAPFuncBase.cs" />
@@ -129,7 +146,7 @@
     <Compile Include="IRAPTreeCorr.cs" />
     <Compile Include="IRAPTreeCorrSet.cs" />
     <Compile Include="IRAPTreeSet.cs" />
-    <Compile Include="IRAPTreeModel.cs" />
+    <Compile Include="IRAPTreeModelSet.cs" />
     <Compile Include="IRAPUser.cs" />
     <Compile Include="Entities\BaseEntity.cs" />
     <Compile Include="Entities\IRAPUserEntity.cs" />

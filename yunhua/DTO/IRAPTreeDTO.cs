@@ -39,42 +39,13 @@ namespace IRAPBase.DTO
         public byte[] IconImage { get; set; }       // --图标图像
     }
 
+
     public class TreeClassifyDTO
     {
-
         public int Ordinal { get; set; }
-        public int TreeID { get; set; }
+      //  public int TreeID { get; set; }
         public int DimLeaf { get; set; }
+       
     }
 
-    public class TransientDTO
-    {
-
-        public long AttrValue { get; set; }
-        public string UnitOfMeasure { get; set; }
-        public Int16 Scale { get; set; }
-        public Double Value
-        {
-            get { return AttrValue / Math.Pow(10, Scale); }
-        }
-
-    }
-
-    public class ClassifyDTO
-    {
-        public int Ordinal { get; set; }
-        public int AttrTreeID { get; set; }
-        public int A4LeafID { get; set; }
-        public string A4Code { get; set; }
-        public string A4AlternateCode { get; set; }
-        public string A4NodeName { get; set; }
-    }
-
-    public class StatusDTO
-    {
-        public int T5LeafID { get; set; }
-        public byte StatusValue { get; set; }
-        public int ColorRGBValue { get; set; }
-        public long TransitCtrlValue { get; set; }
-    }
 }

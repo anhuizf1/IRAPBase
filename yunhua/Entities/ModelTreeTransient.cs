@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,5 +20,19 @@ namespace IRAPBase.Entities
         public bool Protected { get; set; }
         //public string AgencyNodeList { get; set; }
        // public string RoleNodeList { get; set; }
+    }
+    public class ModelTreeTransientMap : EntityTypeConfiguration<ModelTreeTransient>
+    {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ModelTreeTransientMap()
+        {
+            //表定义
+            //ToTable("stb031_Ex1");
+            HasKey(t => new { t.TreeID, t.StatIndex });
+            Property(t => t.UnitOfMeasure).IsRequired();
+            // Property(p => p.LanguageID).HasColumnType("smallint");
+        }
     }
 }
