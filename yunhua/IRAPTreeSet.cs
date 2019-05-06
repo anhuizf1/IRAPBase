@@ -1112,7 +1112,7 @@ namespace IRAPBase
                     if (thisNode.PartitioningKey == _treeID)
                     {
                         error.ErrCode = 22;
-                        error.ErrText = $"结点标识：{nodeID}属于系统结点请从后台删除！";
+                        error.ErrText = $"结点标识：{nodeID}属于系统结点暂不允许删除！";
                         return error;
                     }
                     var tempNode = nodes.FirstOrDefault(c => c.Father == nodeID);
@@ -1122,6 +1122,15 @@ namespace IRAPBase
                         error.ErrText = $"结点“{tempNode.NodeName}”下面已有结点，请先删除子结点！";
                         return error;
                     }
+
+                    var templeafSet = leaves.FirstOrDefault(c => c.Father == nodeID);
+                    if (templeafSet != null)
+                    {
+                        error.ErrCode = 25;
+                        error.ErrText = $"结点“{tempNode.NodeName}”下面已有叶结点，请先删除叶结点再删除此结点！";
+                        return error;
+                    }
+
                     TableSet(thisNode).Remove(thisNode);
                     context.SaveChanges();
                 }
