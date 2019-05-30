@@ -42,7 +42,11 @@ namespace IRAPBase
         /// 分区键
         /// </summary>
         public long PK { get { return _communityID * 10000L + _treeID; } }
-
+        
+        /// <summary>
+        /// 模型
+        /// </summary>
+        public IRAPTreeModel TreeModel { get { return _treeModel; } }
         #region 属性
         /// <summary>
         /// 1.(标识)获取叶子集//叶子
@@ -752,7 +756,7 @@ namespace IRAPBase
             {
                 if ( leaves.Any(c=>c.Code== nodeCode))
                 {
-                    throw new Exception($"此树的实体代码不允许重复，代码 {nodeCode} 已经存在！");
+                    throw new Exception($"实体代码不允许重复，代码 {nodeCode} 已经存在！");
                 }
             }
             try
@@ -1064,7 +1068,7 @@ namespace IRAPBase
                     thisNode.DescInEnglish = englishName;
                     thisNode.ModifiedBy = modifiedBy;
                     thisNode.ModifiedOn = DateTime.Now;
-                    thisNode.AlternateCode = alternateCode;
+                    
                     context.SaveChanges();
                 }
                 else
@@ -1143,6 +1147,18 @@ namespace IRAPBase
                         error.ErrText = $"叶结点标识：{nodeID}不存在！";
                         return error;
                     }
+                    //防错，如果被其他分类属性引用则报错
+                    var obj = context.DataBase.SqlQuery<TreeClassEntity>("select *from IRAP..stb197 where A4LeafID=@NodeID " +
+                        "union all select * from IRAPMDM..stb198 where A4LeafID=@NodeID", new SqlParameter("@NodeID", nodeID)).ToList();
+                    
+                    
+                    if (obj.Count>0)
+                    {
+                        var obj2 = obj[0];
+                        error.ErrCode = 22;
+                        error.ErrText = $"LeafID={nodeID}被系统分类属性 {obj2.LeafID} 引用无法删除！";
+                        return error;
+                    }
                     TableSet(thisNode).Remove(thisNode);
                     context.SaveChanges();
                 }
@@ -1175,6 +1191,17 @@ namespace IRAPBase
         {
             IQueryable<TreeClassEntity> treeClass = _treeClass.Where(c => c.A4LeafID == cleafID && c.Ordinal == ordinal);
             return treeClass.Join(leaves, a => a.LeafID, b => b.LeafID, (a, b) => b);
+        }
+
+        /// <summary>
+        /// 根据叶子清单获取分类属性集合
+        /// </summary>
+        /// <param name="attrIndex">属性序号</param>
+        /// <param name="leafSet">叶子集合</param>
+        /// <returns></returns>
+        public IQueryable<TreeClassEntity> GetClassifySet(byte attrIndex,List<int> leafSet)
+        {
+            return _treeClass.Where( c =>c.Ordinal== attrIndex && leafSet.Contains(c.LeafID));
         }
         /// <summary>
         /// 根据社区号,树标识，叶标识查询一个实体对象，找不到返回null

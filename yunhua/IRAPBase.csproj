@@ -80,6 +80,7 @@
     <Compile Include="Entities\BaseAuxFact.cs" />
     <Compile Include="Entities\BaseCorrAttr.cs" />
     <Compile Include="Entities\BaseRSFact.cs" />
+    <Compile Include="Entities\ErrorMsgTemplateEntity.cs" />
     <Compile Include="Entities\GenAttrEntity.cs" />
     <Compile Include="Entities\GenAttr_T1.cs" />
     <Compile Include="Entities\GenAttr_T4.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="IRAPAssembly.cs" />
     <Compile Include="IRAPBizModel.cs" />
     <Compile Include="IRAPBizModelSet.cs" />
+    <Compile Include="IRAPErrorSet.cs" />
     <Compile Include="IRAPTreeModel.cs" />
     <Compile Include="ITreeBase-del.cs" />
     <Compile Include="IRAPWorkbench.cs" />

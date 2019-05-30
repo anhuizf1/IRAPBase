@@ -20,14 +20,15 @@ namespace TestConsole
     {
         static void Main(string[] args)
         {
-           // IRAPTreeModelSet treeModel = new IRAPTreeModelSet();
-           // treeModel.CreateATree(201, "设备生产厂商", 1000, 9, false); 
-            IDbContext db = DBContextFactory.Instance.CreateContext("IRAPTPMContext");
-
-            IRAPOperBase opBase = new IRAPOperBase(db, "cbf8842a-bce5-4890-873f-441e910efecd", 794);
-            var error = opBase.RevokeToRecycle(693119479, "006");
-
-            Console.WriteLine($"{error.ErrCode} {error.ErrText}");
+            // IRAPTreeModelSet treeModel = new IRAPTreeModelSet();
+            // treeModel.CreateATree(201, "设备生产厂商", 1000, 9, false); 
+            IRAPTreeModelSet treeModel = new IRAPTreeModelSet();
+            var list = treeModel.GetAllTrees();
+            foreach(var r in list)
+            {
+                Console.WriteLine($"{r.TreeID}  {r.TreeName}");
+            }
+           // Console.WriteLine($"{error.ErrCode} {error.ErrText}");
              
             Console.ReadKey();
         }
