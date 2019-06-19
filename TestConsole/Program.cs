@@ -13,41 +13,44 @@ using IRAPBase.Serialize;
 using TestConsole.Entities;
 using System.IO;
 using TestConsole.Entities;
-
+using IRAPCommon;
 namespace TestConsole
 {
     class Program
     {
         static void Main(string[] args)
         {
-            // IRAPTreeModelSet treeModel = new IRAPTreeModelSet();
-            // treeModel.CreateATree(201, "设备生产厂商", 1000, 9, false); 
-            IRAPTreeModelSet treeModel = new IRAPTreeModelSet();
-            var list = treeModel.GetAllTrees();
-            foreach(var r in list)
-            {
-                Console.WriteLine($"{r.TreeID}  {r.TreeName}");
-            }
-           // Console.WriteLine($"{error.ErrCode} {error.ErrText}");
-             
+
+
+            //IRAPTreeModel treeModel = new IRAPTreeModel(205);
+            //  var list=  treeModel.GetClassify();
+
+            IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
+             treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
+            
+
+            //foreach (var r in list)
+            //{
+            //    Console.WriteLine("{0} {1}",r.AttrIndex,r.AttrName);
+            //}
             Console.ReadKey();
         }
 
-        static void PrintTree(IRAPTreeNodes rootNode,ref int i)
+        static void PrintTree(IRAPTreeNodes rootNode, ref int i)
         {
-            if (rootNode.Children==null)
+            if (rootNode.Children == null)
             {
                 //Console.WriteLine(" -- 叶子：{0}  {1}-{2} Father：{3}  accessible:{4}", rootNode.NodeDepth, rootNode.NodeID, 
                 //    rootNode.NodeName, rootNode.Parent, rootNode.Accessibility);
                 return;
             }
-            if (rootNode.FatherNode==null)
-            Console.WriteLine("{0}[{1}]", rootNode.NodeName, rootNode.NodeID);
+            if (rootNode.FatherNode == null)
+                Console.WriteLine("{0}[{1}]", rootNode.NodeName, rootNode.NodeID);
             foreach (var r in rootNode.Children)
             {
                 i++;
-                Console.WriteLine(new string('-', r.NodeDepth*2) + (r.NodeID<0?"-":"+" )+"{0}[{1}] ", r.NodeName, r.NodeID);
-                PrintTree(r,ref i);
+                Console.WriteLine(new string('-', r.NodeDepth * 2) + (r.NodeID < 0 ? "-" : "+") + "{0}[{1}] ", r.NodeName, r.NodeID);
+                PrintTree(r, ref i);
             }
 
         }
@@ -57,7 +60,7 @@ namespace TestConsole
             Type type = obj.GetType();
             foreach (PropertyInfo p in type.GetProperties())
             {
-                Console.Write("{0}={1} ",  p.Name,  p.GetValue(obj));
+                Console.Write("{0}={1} ", p.Name, p.GetValue(obj));
             }
             Console.Write("\n");
         }
@@ -65,7 +68,7 @@ namespace TestConsole
 
         static void AnalyzeResult(string fileName, out string barcode, out string conclusion)
         {
-           // string tempfile = "AN3028111S1-Addfddd-NG.xls";
+            // string tempfile = "AN3028111S1-Addfddd-NG.xls";
             string[] array = fileName.Split('-');
             var barcodeList = new StringBuilder();
             for (int i = 0; i < array.Length - 1; i++)
@@ -79,7 +82,7 @@ namespace TestConsole
         }
 
 
-         public static void Test()
+        public static void Test()
         {
             IRAPWorkbench biz = new IRAPWorkbench();
             try
@@ -91,7 +94,7 @@ namespace TestConsole
                 string nodeName = dn.NodeName.ToString();
                 int communityID = int.Parse(dn.CommunityID.ToString());
 
-             
+
                 Console.WriteLine("success.");
                 //biz.BackResult.ErrCode = 0;
                 //biz.BackResult.ErrText = "添加成功！";
@@ -106,5 +109,12 @@ namespace TestConsole
             }
 
         }
+    }
+
+
+    public class TreeDimDTO
+    {
+        public byte Index { get; set; }
+        public Int16 TreeID { get; set; }
     }
 }

@@ -32,11 +32,23 @@ namespace IRAPBase
         /// <param name="treeID"></param>
         /// <param name="agencyNode"></param>
         /// <param name="roleNode"></param>
+        /// <param name="scenarioIndex">情景</param>
         /// <returns></returns>
-        public List<EGrant> GetGrantListByTree(int treeID,int agencyNode , int roleNode)
+        public List<EGrant> GetGrantListByTree(int treeID,int agencyNode , int roleNode, int scenarioIndex=1)
         {
-            return _queryGrant.Table.Where(c => c.PartitioningKey==PK &&
+            var list= _queryGrant.Table.Where(c => c.PartitioningKey==PK &&
             c.TreeID == treeID && c.AgencyNode == agencyNode && c.RoleNode == roleNode).ToList();
+
+            //过滤情景
+            var backList = new List<EGrant>();
+            foreach(var r in list)
+            {
+                if (r.Scenarios.PadRight(128, '0').Substring(scenarioIndex-1, 1) == "1")
+                {
+                    backList.Add(r);
+                }
+            }
+            return backList;
         }
 
     }

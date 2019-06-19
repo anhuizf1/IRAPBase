@@ -1,5 +1,6 @@
 ﻿using IRAPBase.DTO;
 using IRAPBase.Entities;
+using IRAPBase.Serialize;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,19 @@ namespace IRAPBase
     /// </summary>
     public class IRAPTreeModelSet
     {
-        private Repository<ModelTreeEntity> treesRepo = null;
+        private Repository<ModelSysTreeEntity> treesRepoSys = null;
+        private Repository<ModelBizTreeEntity> treesRepoBiz = null;
         private IDbContext db = null;
+        private IDbContext mdmdb = null;
         /// <summary>
         /// 构造函数
         /// </summary>
         public IRAPTreeModelSet()
         {
             db = DBContextFactory.Instance.CreateContext("IRAPContext");
-            treesRepo = new Repository<ModelTreeEntity>(db);
+            mdmdb = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            treesRepoSys = new Repository<ModelSysTreeEntity>(db);
+            treesRepoBiz = new Repository<ModelBizTreeEntity>(mdmdb);
         }
 
         /// <summary>
@@ -32,7 +37,9 @@ namespace IRAPBase
         public IRAPTreeModelSet(IDbContext db)
         {
             this.db = db;
-            treesRepo = new Repository<ModelTreeEntity>(db);
+            treesRepoSys = new Repository<ModelSysTreeEntity>(db);
+            mdmdb = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            treesRepoBiz = new Repository<ModelBizTreeEntity>(mdmdb);
         }
 
         /// <summary>
@@ -66,9 +73,17 @@ namespace IRAPBase
         /// <param name="exclusiveLevel">是否排他</param>
         public void CreateATree(int treeID, string treeName, int leafLimit, int depthLimit, bool shareToAll, byte treeType,
            string entityAttrTBName, string nodeAttrTBLName, int orderByMode, string entityCodeName, string alternateCodeName,
-           bool uniqueEntityCode, bool uniqueNodeCode, bool autoCodeGenerating, bool communityIndependent, bool exclusiveLevel )
+           bool uniqueEntityCode, bool uniqueNodeCode, bool autoCodeGenerating, bool communityIndependent, byte exclusiveLevel)
         {
-            var treeEntity = treesRepo.Table.FirstOrDefault(c => c.TreeID == treeID);
+            ModelTreeEntity treeEntity = null;
+            if (treeID > 100)
+            {
+                treeEntity = treesRepoBiz.Table.FirstOrDefault(c => c.TreeID == treeID);
+            }
+            else
+            {
+                treeEntity = treesRepoSys.Table.FirstOrDefault(c => c.TreeID == treeID);
+            }
             if (treeEntity != null)
             {
                 throw new Exception($"已存在Tree={treeID}");
@@ -92,11 +107,23 @@ namespace IRAPBase
                 CommunityIndependent = communityIndependent,
                 AlternateCodeNameID = alternateNameID,
                 AutoCodeGenerating = autoCodeGenerating,
-                OrderByMode = orderByMode,
+                OrderByMode = (byte)orderByMode,
                 EntityCodeNameID = entityNameID
             };
-            treesRepo.Insert(etree);
-            treesRepo.SaveChanges();
+
+            if (treeID > 100)
+            {
+                ModelBizTreeEntity e = etree.CopyTo<ModelBizTreeEntity>();
+                treesRepoBiz.Insert(e);
+                treesRepoBiz.SaveChanges();
+            }
+            else
+            {
+                ModelSysTreeEntity e = etree.CopyTo<ModelSysTreeEntity>();
+                treesRepoSys.Insert(e);
+                treesRepoSys.SaveChanges();
+            }
+
             return;
         }
         /// <summary>
@@ -106,7 +133,16 @@ namespace IRAPBase
         /// <returns></returns>
         public ModelTreeEntity GetATree(int treeID)
         {
-            var treeEntity = treesRepo.Table.FirstOrDefault(c => c.TreeID == treeID);
+            ModelTreeEntity treeEntity = null;
+
+            if (treeID > 100)
+            {
+                treeEntity = treesRepoBiz.Table.FirstOrDefault(c => c.TreeID == treeID);
+            }
+            else
+            {
+                treeEntity = treesRepoSys.Table.FirstOrDefault(c => c.TreeID == treeID);
+            }
             if (treeEntity == null)
             {
                 throw new Exception($"不存在Tree={treeID}");
@@ -124,7 +160,15 @@ namespace IRAPBase
             var eTree = GetATree(treeID);
             eTree.EntityAttrTBName = tblName;
             eTree.LastUpdatedTime = DateTime.Now;
-            db.SaveChanges();
+            if (treeID > 100)
+            {
+                mdmdb.SaveChanges();
+            }
+            else
+            {
+                db.SaveChanges();
+            }
+
         }
         /// <summary>
         /// 设置结点属性表名
@@ -136,7 +180,14 @@ namespace IRAPBase
             var eTree = GetATree(treeID);
             eTree.NodeAttrTBName = attrTBName;
             eTree.LastUpdatedTime = DateTime.Now;
-            db.SaveChanges();
+            if (treeID > 100)
+            {
+                mdmdb.SaveChanges();
+            }
+            else
+            {
+                db.SaveChanges();
+            }
         }
         /// <summary>
         /// 设置实体代码名称
@@ -150,7 +201,14 @@ namespace IRAPBase
             int nameID = GetNameID(name);
             eTree.EntityCodeNameID = nameID;
             eTree.LastUpdatedTime = DateTime.Now;
-            db.SaveChanges();
+            if (treeID > 100)
+            {
+                mdmdb.SaveChanges();
+            }
+            else
+            {
+                db.SaveChanges();
+            }
             return nameID;
         }
         /// <summary>
@@ -159,17 +217,35 @@ namespace IRAPBase
         /// <param name="treeID">树标识</param>
         public IRAPError DeleteATree(int treeID)
         {
-            var aTree = GetATree(treeID);
-            treesRepo.Entities.Remove(aTree);
-            db.SaveChanges();
+
+            if (treeID > 100)
+            {
+                var treeEntity = treesRepoBiz.Table.FirstOrDefault(c => c.TreeID == treeID);
+                treesRepoBiz.Entities.Remove(treeEntity);
+                mdmdb.SaveChanges();
+            }
+            else
+            {
+                var treeEntity = treesRepoSys.Table.FirstOrDefault(c => c.TreeID == treeID);
+                treesRepoSys.Entities.Remove(treeEntity);
+                db.SaveChanges();
+            }
             return new IRAPError(0, "删除成功！");
         }
         /// <summary>
         /// 修改一棵树：使用GetATree获取一棵树实体，直接对实体进行修改，调用此方法保存
         /// </summary>
-        public void ModifyATree()
+        public void ModifyATree(int treeID)
         {
-            db.SaveChanges();
+            if (treeID > 100)
+            {
+                mdmdb.SaveChanges();
+            }
+            else
+            {
+                db.SaveChanges();
+            }
+            
         }
 
         /// <summary>
@@ -178,8 +254,11 @@ namespace IRAPBase
         /// <returns></returns>
         public List<TreeModelDTO> GetAllTrees()
         {
-            var trees = db.Set<ModelTreeEntity>();
+            var trees = db.Set<ModelSysTreeEntity>();
             var namespaces = db.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
+
+            
+
             var treeList = from a in trees
                            join b in namespaces on a.NameID equals b.NameID
                            join c in namespaces on a.EntityCodeNameID equals c.NameID
@@ -206,7 +285,40 @@ namespace IRAPBase
                                ExclusiveLevel = a.ExclusiveLevel
                            };
 
-            return treeList.ToList();
+            var list = treeList.ToList();
+            //再找大于100的树
+            var trees2 = mdmdb.Set<ModelBizTreeEntity>();
+            var namespaces2 = mdmdb.Set<SysNameSpaceMDMEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
+            var treeList2 = from a in trees2
+                            join b in namespaces2 on a.NameID equals b.NameID
+                            join c in namespaces2 on a.EntityCodeNameID equals c.NameID
+                            join d in namespaces2 on a.AlternateCodeNameID equals d.NameID
+                            orderby a.TreeID
+                            select new TreeModelDTO
+                            {
+                                TreeID = a.TreeID,
+                                TreeName = b.NameDescription,
+                                TreeType = a.TreeType,
+                                LeafLimit = a.LeafLimit,
+                                GenAttrTBLName = a.EntityAttrTBName,
+                                NodeAttrTBName = a.NodeAttrTBName,
+                                PrimaryCodeName = c.NameDescription,
+                                AlternateCodeName = d.NameDescription,
+                                ShareToAll = a.ShareToAll,
+                                UniqueEntityCode = a.UniqueEntityCode,
+                                UniqueNodeCode = a.UniqueNodeCode,
+                                OrderByMode = a.OrderByMode,
+                                LastUpdatedTime = a.LastUpdatedTime,
+                                AutoCodeGenerating = a.AutoCodeGenerating,
+                                CommunityIndependent = a.CommunityIndependent,
+                                DepthLimit = a.DepthLimit,
+
+                            };
+            foreach (var item in treeList2.ToList())
+            {
+                list.Add(item);
+            }
+            return list;
         }
 
     }

@@ -43,9 +43,26 @@ namespace IRAPBase.DTO
     public class TreeClassifyDTO
     {
         public int Ordinal { get; set; }
-      //  public int TreeID { get; set; }
+        //  public int TreeID { get; set; }
         public int DimLeaf { get; set; }
-       
+
+    }
+
+    /// <summary>
+    /// 可访问的权限控制点清单DTO
+    /// </summary>
+    public class AccessibleCSTDTO
+    {
+        public long PartitioningKey { get; set; }           //   --分区键
+        public int CSTRoot { get; set; }                          // --权限控制点
+        public bool Accessible { get; set; }                     //是否权限
+    }
+
+
+    public class TreeDimDTO
+    {
+        public byte Index { get; set; }
+        public Int16 TreeID { get; set; }
     }
 
 }

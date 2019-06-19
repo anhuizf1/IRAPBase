@@ -47,4 +47,25 @@ namespace IRAPBase.mapping
             Property(t => t.HelpMemoryCode).IsRequired();
         }
     }
+
+
+    public class SysNameSpaceMDMEntityMap : EntityTypeConfiguration<SysNameSpaceMDMEntity>
+    {
+
+        public SysNameSpaceMDMEntityMap()
+        {
+            //表定义
+
+            HasKey(t => new { t.PartitioningKey, t.LanguageID, t.NameID });
+
+            Property(t => t.PartitioningKey).IsRequired();
+            Property(t => t.NameID).IsRequired();
+            Property(t => t.LanguageID).IsRequired();
+            Property(t => t.BChecksum).IsRequired();
+            Property(t => t.NameDescription).IsRequired();
+            Property(t => t.SearchCode1).IsRequired();
+            Property(t => t.SearchCode2).IsRequired();
+            Property(t => t.HelpMemoryCode).IsRequired();
+        }
+    }
 }

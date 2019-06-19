@@ -294,6 +294,17 @@ namespace IRAPBase
             RemoveNoAccessible(rootTree);
             return GetPlainTreeData(rootTree);
         }
+
+        public List<AccessibleCSTDTO> AccessibleCSTs(string access_token, int treeID, int scenarioIndex)
+        {
+            //1- 查stb020
+            throw new NotImplementedException();
+             
+            //向上追溯
+            //向下追溯
+            //合并结果
+        }
+
         /// <summary>
         /// 获取树视图（根据令牌）
         /// </summary>
@@ -1252,6 +1263,54 @@ namespace IRAPBase
             }
         }
 
+        public static List<TreeClassEntity> GetLeafSetByDimCode(int communityID,int treeID,string dimCode, List<int> listSet)
+        {
+
+
+            //string dimCode = "01020309";
+            //解析完整的分类属性链
+            int len = dimCode.Length;
+            Int16 trueTreeID = (Int16)treeID;
+            Dictionary<byte, TreeDimDTO> treeList = new Dictionary<byte, TreeDimDTO>();
+            byte j = 0;
+            for (int i = 0; i < len; i += 2)
+            {
+
+                IRAPTreeModel treeModel = new IRAPTreeModel(trueTreeID);
+                var list = treeModel.GetClassify();
+                byte index = byte.Parse(dimCode.Substring(i, 2));
+                trueTreeID = (Int16)(list[index].AttrTreeID);
+                j++;
+                TreeDimDTO dim = new TreeDimDTO() { Index = index, TreeID = trueTreeID };
+                treeList.Add(j, dim);
+            }
+            //对分类属性进行倒叙过滤
+            j = 0;
+            var newList = treeList.OrderByDescending(c => c.Key).ToList();
+            List<TreeClassEntity> lastSet = null;
+            foreach (var r in newList)
+            {
+                j++;
+                var db = DBContextFactory.Instance.CreateContext("IRAPContext");
+                if (j == 1)
+                {
+                    lastSet = db.Set<ETreeSysClass>().Cast<TreeClassEntity>()
+                        .Where(c => c.AttrTreeID == r.Value.TreeID && c.Ordinal== r.Value.Index && listSet.Contains(c.A4LeafID)).ToList();
+                }
+                else
+                {
+                    var thisList= db.Set<ETreeSysClass>().Cast<TreeClassEntity>()
+                        .Where(c => c.AttrTreeID == r.Value.TreeID && c.Ordinal == r.Value.Index).ToList();
+
+                    lastSet = ( from a in lastSet join b in thisList on new { LeafID= a.A4LeafID } equals new { b.LeafID }
+                                where a.AttrTreeID== r.Value.TreeID select a ).ToList();
+                }
+            }
+            return lastSet;
+          //  throw new NotImplementedException();
+
+        }
+
         /// <summary>
         /// 根据叶标识查询实体
         /// </summary>
@@ -1271,6 +1330,8 @@ namespace IRAPBase
                 return leafEntity;
             }
         }
+
+
     }
 
     /// <summary>

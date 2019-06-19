@@ -62,7 +62,7 @@ namespace IRAPBase.DTO
         /// <summary>
         /// 排序模式1- Code 2- 名称 3-自定义
         /// </summary>
-        public int OrderByMode { get; set; }
+        public byte OrderByMode { get; set; }
         /// <summary>
         /// 更新时间
         /// </summary>
@@ -72,7 +72,7 @@ namespace IRAPBase.DTO
 
         public bool AutoCodeGenerating { get; set; }
 
-        public bool ExclusiveLevel { get; set; }
+        public byte ExclusiveLevel { get; set; }
     }
 
     /// <summary>

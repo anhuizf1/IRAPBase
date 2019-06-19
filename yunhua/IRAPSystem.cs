@@ -101,6 +101,7 @@ namespace IRAPBase
         /// <param name="VersionNo">版本号：例如V1.02 </param>
         /// <param name="ProgLangID">编程语言标识 见视图 svw_ProgLanguages或调用GetProgLanguages方法</param>
         /// <param name="MenuShowCtrl">菜单样式：1-横向菜单2-树菜单3-竖向手风琴菜单5-带tab页的风格7-竖向黑色主题</param>
+        /// <param name="MenuStyle"></param>
         /// <param name="Author">作者</param>
         /// <param name="Coauthor">合作者</param>
         /// <param name="LogoPicPath">网页顶部banner路径</param>
@@ -109,7 +110,7 @@ namespace IRAPBase
         /// <param name="BackgroundPic">登录背景图片二进制流</param>
         /// <param name="DefaultAppServer">默认服务器</param>
         /// <returns></returns>
-        public IRAPError AddASystem(int SystemID, string ProductNo, string VersionNo, int ProgLangID, int MenuShowCtrl,
+        public IRAPError AddASystem(int SystemID, string ProductNo, string VersionNo, int ProgLangID, int MenuShowCtrl,int MenuStyle,
             string Author = "softland", string Coauthor = "", string LogoPicPath = "", byte[] LogoPic = null, string BGPicPath = "", byte[] BackgroundPic = null,
             string DefaultAppServer = "")
         {
@@ -138,6 +139,15 @@ namespace IRAPBase
                 VoiceFilePath = ""
             };
             _systems.Insert(a);
+            var b = new SystemExEntity()
+            {
+                SystemID = SystemID,
+                MenuShowCtrl = (byte)MenuShowCtrl,
+                MenuStyle1 = (byte)MenuStyle,
+                ProgLanguageID = (short)ProgLangID,
+
+            };
+            _systemEx1.Add(b);
             _db.SaveChanges();
             return new IRAPError(0, "新增成功！");
         }
@@ -168,8 +178,6 @@ namespace IRAPBase
             return new IRAPError(0, "修改成功！");
         }
         //菜单管理
-
-
 
         /// <summary>
         /// 获取编程语言清单

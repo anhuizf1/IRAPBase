@@ -14,8 +14,9 @@ namespace IRAPBase
     /// </summary>
     public class IRAPTreeModel
     {
-       // private Repository<ModelTreeEntity> treesRepo = null;
+        // private Repository<ModelTreeEntity> treesRepo = null;
         private IDbContext db = null;
+        private IDbContext mdmDb = null;
         private IQueryable<ModelTreeClassfiyEntity> _classifySet = null;
         private IQueryable<ModelTreeTransient> _transientSet = null;
         private IQueryable<SysNameSpaceEntity> _namespaces = null;
@@ -38,8 +39,17 @@ namespace IRAPBase
         public IRAPTreeModel(int treeID)
         {
             db = DBContextFactory.Instance.CreateContext("IRAPContext");
-            _treeEntity=  db.Set<ModelTreeEntity>().FirstOrDefault(c => c.TreeID == treeID);
-            if (_treeEntity==null)
+            if (treeID > 100)
+            {
+                mdmDb = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+                _treeEntity = mdmDb.Set<ModelBizTreeEntity>().FirstOrDefault(c => c.TreeID == treeID);
+            }
+            else
+            {
+                _treeEntity = db.Set<ModelSysTreeEntity>().FirstOrDefault(c => c.TreeID == treeID);
+            }
+
+            if (_treeEntity == null)
             {
                 throw new Exception($"第 {treeID} 棵树不存在，请使用IRAPTreeModelSet类先创建树");
             }
@@ -78,7 +88,7 @@ namespace IRAPBase
         {
             var t5LeafSet = db.Set<ETreeSysLeaf>().Where(c => c.TreeID == 5);
             return _statusSet.Join(t5LeafSet, a => a.T5LeafID, b => b.LeafID, (a, b) =>
-         new TreeStatusModelDTO { AttrIndex = a.StateIndex, AttrName = b.NodeName, T5LeafID = a.T5LeafID, Protect=a.Protected })
+         new TreeStatusModelDTO { AttrIndex = a.StateIndex, AttrName = b.NodeName, T5LeafID = a.T5LeafID, Protect = a.Protected })
             .OrderBy(c => c.AttrIndex).ToList();
         }
 
@@ -343,7 +353,7 @@ namespace IRAPBase
         #endregion
 
         #region 一般属性
-      
+
         /// <summary>
         /// 获取一般属性表的数据字典
         /// </summary>
@@ -372,7 +382,7 @@ namespace IRAPBase
                           DisPlayName = a.NodeName,
                           ColName = a.Code,
                           AllowNull = b.AllowNull,
-                          CollationRule = b.CollationRule  ,
+                          CollationRule = b.CollationRule,
                           DataPrecision = b.DataPrecision,
                           DecimalDigits = b.DecimalDigits,
                           FieldWidth = b.FieldWidth,
@@ -468,7 +478,7 @@ namespace IRAPBase
         /// <param name="rsAttrTBLName">行集属性表名</param>
         /// <param name="protect">是否保护(在界面中是否允许修改内容)</param>
         /// <returns></returns>
-        public IRAPError DefineRowSet(byte attrIndex, string attrName,  bool protect, string rsAttrTBLName = "")
+        public IRAPError DefineRowSet(byte attrIndex, string attrName, bool protect, string rsAttrTBLName = "")
         {
             var dbContext = db.Set<ModelTreeRowSet>();
             var rowSet = dbContext.FirstOrDefault(c => c.TreeID == _treeID && c.RowSetID == attrIndex);
@@ -550,9 +560,9 @@ namespace IRAPBase
         /// <param name="defaultIconID">默认图标ID</param>
         /// <param name="codingRule">编码规则</param>
         /// <returns></returns>
-        public IRAPError DefineTreeLevel(byte nodeDepth, string levelName,  string codingRule="", int defaultIconID=0)
+        public IRAPError DefineTreeLevel(byte nodeDepth, string levelName, string codingRule = "", int defaultIconID = 0)
         {
-            if (nodeDepth!=255)
+            if (nodeDepth != 255)
             {
                 if (_treeEntity.DepthLimit < nodeDepth)
                 {
@@ -560,9 +570,9 @@ namespace IRAPBase
                 }
             }
             var dbContext = db.Set<TreeLevelEntity>();
-            var levelEntity = dbContext.FirstOrDefault(c => c.TreeID == _treeID && c.NodeDepth== nodeDepth);
-            var nameID= IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys).GetNameID(0, levelName);
-            if ( levelEntity==null)
+            var levelEntity = dbContext.FirstOrDefault(c => c.TreeID == _treeID && c.NodeDepth == nodeDepth);
+            var nameID = IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys).GetNameID(0, levelName);
+            if (levelEntity == null)
             {
                 TreeLevelEntity e = new TreeLevelEntity()
                 {
@@ -579,20 +589,20 @@ namespace IRAPBase
                 levelEntity.DefaultIconID = defaultIconID;
                 levelEntity.LevelAliasNameID = nameID;
                 levelEntity.NodeDepth = nodeDepth;
-                levelEntity.CodingRule = codingRule; 
+                levelEntity.CodingRule = codingRule;
             }
             db.SaveChanges();
-            return new IRAPError(0,$"树的第{nodeDepth}层定义成功！");
+            return new IRAPError(0, $"树的第{nodeDepth}层定义成功！");
         }
         /// <summary>
         /// 删除树的层次定义
         /// </summary>
         /// <param name="nodeDepth"></param>
         /// <returns></returns>
-        public IRAPError DeleteTreeLevel( int nodeDepth)
+        public IRAPError DeleteTreeLevel(int nodeDepth)
         {
             var dbContext = db.Set<TreeLevelEntity>();
-            var levelEntity = dbContext.FirstOrDefault(c => c.TreeID == (short)_treeID && c.NodeDepth ==(byte)nodeDepth);
+            var levelEntity = dbContext.FirstOrDefault(c => c.TreeID == (short)_treeID && c.NodeDepth == (byte)nodeDepth);
 
             if (levelEntity == null)
             {
@@ -623,7 +633,7 @@ namespace IRAPBase
         /// <param name="name">输入名称</param>
         public void SetEntityCodeName(string name)
         {
-             
+
             int nameID = IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys).GetNameID(0, name);
             _treeEntity.EntityCodeNameID = nameID;
             db.SaveChanges();
