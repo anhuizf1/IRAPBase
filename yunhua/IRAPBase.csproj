@@ -45,6 +45,12 @@
     <Reference Include="IRAPShared">
       <HintPath>..\lib\IRAPShared.dll</HintPath>
     </Reference>
+    <Reference Include="Logrila.Logging, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Logrila.Logging.1.0.3.0\lib\net46\Logrila.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Logrila.Logging.NLogIntegration, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Logrila.Logging.NLogIntegration.1.0.3.0\lib\net46\Logrila.Logging.NLogIntegration.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=8.0.15.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.15\lib\net452\MySql.Data.dll</HintPath>
     </Reference>
@@ -53,6 +59,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel" />
@@ -92,6 +101,7 @@
     <Compile Include="Entities\RowSet_T4R2.cs" />
     <Compile Include="Entities\RowSet_T4R3.cs" />
     <Compile Include="Entities\RowSet_T4R4.cs" />
+    <Compile Include="Enums\LogEnumType.cs" />
     <Compile Include="Extend.cs" />
     <Compile Include="IRAPAssembly.cs" />
     <Compile Include="IRAPBizModel.cs" />

@@ -12,27 +12,30 @@ using IRAPMES.Entities;
 using IRAPBase.Serialize;
 using TestConsole.Entities;
 using System.IO;
-using TestConsole.Entities;
+ 
 using IRAPCommon;
+using Logrila.Logging;
+
 namespace TestConsole
 {
     class Program
     {
         static void Main(string[] args)
         {
+            Logrila.Logging.NLogIntegration.NLogLogger.Use();
 
+             IRAPTreeModel treeModel = new IRAPTreeModel(1);
+              var list=  treeModel.GetClassify();
 
-            //IRAPTreeModel treeModel = new IRAPTreeModel(205);
-            //  var list=  treeModel.GetClassify();
-
-            IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
-             treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
+          //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
+           //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
             
-
-            //foreach (var r in list)
-            //{
-            //    Console.WriteLine("{0} {1}",r.AttrIndex,r.AttrName);
-            //}
+            //throw new Exception("Error!");
+             
+            foreach (var r in list)
+            {
+                Console.WriteLine("{0} {1}", r.AttrIndex, r.AttrName);
+            }
             Console.ReadKey();
         }
 
