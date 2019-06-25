@@ -42,7 +42,7 @@ namespace IRAPBase
         /// 分区键
         /// </summary>
         public long PK { get { return _communityID * 10000L + _treeID; } }
-        
+
         /// <summary>
         /// 模型
         /// </summary>
@@ -129,8 +129,15 @@ namespace IRAPBase
             }
             else
             {
+                if (_treeID > 100 && _treeID <= 1000) {
+                    leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                }
+                else
+                {
+                    leaves = new Repository<ETreeRichLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                }
                 nodes = new Repository<ETreeBizDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-                leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+               
                 //加载分类属性
                 _treeClass = context.Set<ETreeBizClass>().Where(c => c.PartitioningKey == PK);
                 //加载瞬态属性
@@ -277,7 +284,7 @@ namespace IRAPBase
         /// <param name="agencyNode"></param>
         /// <param name="roleNode"></param>
         /// <returns></returns>
-        public List<TreeViewDTO> AccessibleTreeView(int entryNode,int agencyNode, int roleNode)
+        public List<TreeViewDTO> AccessibleTreeView(int entryNode, int agencyNode, int roleNode)
         {
             IRAPGrant grant = new IRAPGrant(_communityID);
             accessibleNodes.Clear();
@@ -299,7 +306,7 @@ namespace IRAPBase
         {
             //1- 查stb020
             throw new NotImplementedException();
-             
+
             //向上追溯
             //向下追溯
             //合并结果
@@ -765,7 +772,7 @@ namespace IRAPBase
             //实体代码唯一性防错
             if (_treeModel.TreeEntity.UniqueEntityCode)
             {
-                if ( leaves.Any(c=>c.Code== nodeCode))
+                if (leaves.Any(c => c.Code == nodeCode))
                 {
                     throw new Exception($"实体代码不允许重复，代码 {nodeCode} 已经存在！");
                 }
@@ -821,10 +828,15 @@ namespace IRAPBase
                 {
                     c = e.CopyTo<ETreeSysLeaf>();
                 }
-                else
+                else if (_treeID > 100 && _treeID <= 1000)
                 {
                     c = e.CopyTo<ETreeBizLeaf>();
                 }
+                else
+                {
+                    c = e.CopyTo<ETreeRichLeaf>();
+                }
+
                 TableSet(c).Add(c);
                 //初始化分类属性清单
                 if (_treeClassModel == null)
@@ -840,7 +852,8 @@ namespace IRAPBase
                         LeafID = e.LeafID,
                         PartitioningKey = PK,
                         VersionLE = (int)(Math.Pow(2, 31) - 1),
-                        TransactNoLE = 9223372036854775807
+                        TransactNoLE = 9223372036854775807,
+                        A4NameID = 0
                     };
                     TreeClassEntity t4e;
                     TreeClassEntity t4eh;
@@ -1041,7 +1054,7 @@ namespace IRAPBase
                     }
                     if (_treeModel.TreeEntity.UniqueNodeCode)
                     {
-                        if (nodes.Any(i => i.Code == nodeCode && i.NodeID!= nodeID))
+                        if (nodes.Any(i => i.Code == nodeCode && i.NodeID != nodeID))
                         {
                             throw new Exception($"此树的结点代码不允许重复，代码 {nodeCode} 已经存在！");
                         }
@@ -1056,7 +1069,7 @@ namespace IRAPBase
                 }
                 else if (nodeType == 4)
                 {
-                    var thisNode = leaves.FirstOrDefault(r => r.LeafID == nodeID );
+                    var thisNode = leaves.FirstOrDefault(r => r.LeafID == nodeID);
                     if (thisNode == null)
                     {
                         error.ErrCode = 22;
@@ -1066,7 +1079,7 @@ namespace IRAPBase
 
                     if (_treeModel.TreeEntity.UniqueEntityCode)
                     {
-                        if (leaves.Any(i => i.Code == nodeCode&& i.LeafID!= nodeID))
+                        if (leaves.Any(i => i.Code == nodeCode && i.LeafID != nodeID))
                         {
                             throw new Exception($"此树的实体代码不允许重复，代码 {nodeCode} 已经存在！");
                         }
@@ -1079,7 +1092,7 @@ namespace IRAPBase
                     thisNode.DescInEnglish = englishName;
                     thisNode.ModifiedBy = modifiedBy;
                     thisNode.ModifiedOn = DateTime.Now;
-                    
+
                     context.SaveChanges();
                 }
                 else
@@ -1161,9 +1174,9 @@ namespace IRAPBase
                     //防错，如果被其他分类属性引用则报错
                     var obj = context.DataBase.SqlQuery<TreeClassEntity>("select *from IRAP..stb197 where A4LeafID=@NodeID " +
                         "union all select * from IRAPMDM..stb198 where A4LeafID=@NodeID", new SqlParameter("@NodeID", nodeID)).ToList();
-                    
-                    
-                    if (obj.Count>0)
+
+
+                    if (obj.Count > 0)
                     {
                         var obj2 = obj[0];
                         error.ErrCode = 22;
@@ -1210,9 +1223,9 @@ namespace IRAPBase
         /// <param name="attrIndex">属性序号</param>
         /// <param name="leafSet">叶子集合</param>
         /// <returns></returns>
-        public IQueryable<TreeClassEntity> GetClassifySet(byte attrIndex,List<int> leafSet)
+        public IQueryable<TreeClassEntity> GetClassifySet(byte attrIndex, List<int> leafSet)
         {
-            return _treeClass.Where( c =>c.Ordinal== attrIndex && leafSet.Contains(c.LeafID));
+            return _treeClass.Where(c => c.Ordinal == attrIndex && leafSet.Contains(c.LeafID));
         }
         /// <summary>
         /// 根据社区号,树标识，叶标识查询一个实体对象，找不到返回null
@@ -1232,10 +1245,15 @@ namespace IRAPBase
                 db = DBContextFactory.Instance.CreateContext("IRAPContext");
                 return db.Set<ETreeSysLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
             }
+            else if (treeID > 100 && treeID <= 1000)
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+                return db.Set< ETreeBizLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
+            }
             else
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
-                return db.Set<ETreeBizLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
+                return db.Set<ETreeRichLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
             }
         }
 
@@ -1256,14 +1274,19 @@ namespace IRAPBase
                 db = DBContextFactory.Instance.CreateContext("IRAPContext");
                 return db.Set<ETreeSysLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
             }
+            else if (treeID>100 && treeID<=1000)
+            {
+                db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+                return db.Set<ETreeBizLeaf >().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
+            }
             else
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
-                return db.Set<ETreeBizLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
+                return db.Set<ETreeRichLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
             }
         }
 
-        public static List<TreeClassEntity> GetLeafSetByDimCode(int communityID,int treeID,string dimCode, List<int> listSet)
+        public static List<TreeClassEntity> GetLeafSetByDimCode(int communityID, int treeID, string dimCode, List<int> listSet)
         {
 
 
@@ -1295,19 +1318,21 @@ namespace IRAPBase
                 if (j == 1)
                 {
                     lastSet = db.Set<ETreeSysClass>().Cast<TreeClassEntity>()
-                        .Where(c => c.AttrTreeID == r.Value.TreeID && c.Ordinal== r.Value.Index && listSet.Contains(c.A4LeafID)).ToList();
+                        .Where(c => c.AttrTreeID == r.Value.TreeID && c.Ordinal == r.Value.Index && listSet.Contains(c.A4LeafID)).ToList();
                 }
                 else
                 {
-                    var thisList= db.Set<ETreeSysClass>().Cast<TreeClassEntity>()
+                    var thisList = db.Set<ETreeSysClass>().Cast<TreeClassEntity>()
                         .Where(c => c.AttrTreeID == r.Value.TreeID && c.Ordinal == r.Value.Index).ToList();
 
-                    lastSet = ( from a in lastSet join b in thisList on new { LeafID= a.A4LeafID } equals new { b.LeafID }
-                                where a.AttrTreeID== r.Value.TreeID select a ).ToList();
+                    lastSet = (from a in lastSet
+                               join b in thisList on new { LeafID = a.A4LeafID } equals new { b.LeafID }
+                               where a.AttrTreeID == r.Value.TreeID
+                               select a).ToList();
                 }
             }
             return lastSet;
-          //  throw new NotImplementedException();
+            //  throw new NotImplementedException();
 
         }
 

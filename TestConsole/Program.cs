@@ -24,9 +24,8 @@ namespace TestConsole
         {
             Logrila.Logging.NLogIntegration.NLogLogger.Use();
 
-             IRAPTreeModel treeModel = new IRAPTreeModel(1);
-              var list=  treeModel.GetClassify();
-
+            IRAPTreeModelSet treeSet = new IRAPTreeModelSet();
+             var list=   treeSet.GetAllTrees();
           //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
            //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
             
@@ -34,7 +33,7 @@ namespace TestConsole
              
             foreach (var r in list)
             {
-                Console.WriteLine("{0} {1}", r.AttrIndex, r.AttrName);
+                Console.WriteLine("{0} {1}", r.TreeID, r.TreeName);
             }
             Console.ReadKey();
         }

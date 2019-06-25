@@ -56,20 +56,21 @@ namespace IRAPBase
             }
         }
 
-       /// <summary>
-       /// 静态方法获取实例
-       /// </summary>
-       /// <returns></returns>
+        /// <summary>
+        /// 静态方法获取实例
+        /// </summary>
+        /// <returns></returns>
         public static Log InstanceID
         {
-            get {
+            get
+            {
                 if (thisLog == null)
                 {
                     thisLog = new Log();
                 }
                 return thisLog;
             }
-            
+
         }
         /// <summary>
         /// 构造函数
@@ -84,7 +85,7 @@ namespace IRAPBase
         /// <typeparam name="T"></typeparam>
         /// <param name="msg"></param>
         /// <param name="logType"></param>
-        public  void WriteMsg<T>(string msg, LogType logType) where T : class
+        public void WriteMsg<T>(LogType logType, string msg) where T : class
         {
 
             Logrila.Logging.ILog _log = Logger.Get<T>();
@@ -109,12 +110,71 @@ namespace IRAPBase
                     _log.Info(msg);
                     break;
             }
-
         }
- 
-        
+
+        public void WriteMsg<T>(LogType logType, object msg) where T : class
+        {
+
+            Logrila.Logging.ILog _log = Logger.Get<T>();
+            switch (logType)
+            {
+                case LogType.DEBUG:
+                    _log.Debug(msg);
+                    break;
+                case LogType.ERROR:
+                    _log.Error(msg);
+                    break;
+                case LogType.WARN:
+                    _log.Warn(msg);
+                    break;
+                case LogType.INFO:
+                    _log.Info(msg);
+                    break;
+                case LogType.FATAL:
+                    _log.Fatal(msg);
+                    break;
+                default:
+                    _log.Info(msg);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 写日志可跟踪异常位置
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="logType"></param>
+        /// <param name="msg"></param>
+        /// <param name="err"></param>
+        public void WriteMsg<T>(LogType logType, object msg, Exception err) where T : class
+        {
+            Logrila.Logging.ILog _log = Logger.Get<T>();
+            switch (logType)
+            {
+                case LogType.DEBUG:
+                    _log.Debug(msg, err);
+                    break;
+                case LogType.ERROR:
+                    _log.Error(msg, err);
+                    break;
+                case LogType.WARN:
+                    _log.Warn(msg, err);
+                    break;
+                case LogType.INFO:
+                    _log.Info(msg, err);
+                    break;
+                case LogType.FATAL:
+                    _log.Fatal(msg, err);
+                    break;
+                default:
+                    _log.Info(msg, err);
+                    break;
+            }
+        }
+
+
     }
 
 
-  
+
 }
