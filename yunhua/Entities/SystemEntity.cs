@@ -11,6 +11,7 @@ namespace IRAPBase.Entities
     public  class SystemEntity : BaseEntity
     {
 
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Ordinal { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]//不自动增长
         public int SystemID { get; set; }

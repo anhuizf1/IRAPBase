@@ -39,42 +39,30 @@ namespace IRAPBase.DTO
         public byte[] IconImage { get; set; }       // --图标图像
     }
 
+
     public class TreeClassifyDTO
     {
-
         public int Ordinal { get; set; }
-        public int TreeID { get; set; }
+        //  public int TreeID { get; set; }
         public int DimLeaf { get; set; }
+
     }
 
-    public class TransientDTO
+    /// <summary>
+    /// 可访问的权限控制点清单DTO
+    /// </summary>
+    public class AccessibleCSTDTO
     {
-
-        public long AttrValue { get; set; }
-        public string UnitOfMeasure { get; set; }
-        public Int16 Scale { get; set; }
-        public Double Value
-        {
-            get { return AttrValue / Math.Pow(10, Scale); }
-        }
-
+        public long PartitioningKey { get; set; }           //   --分区键
+        public int CSTRoot { get; set; }                          // --权限控制点
+        public bool Accessible { get; set; }                     //是否权限
     }
 
-    public class ClassifyDTO
+
+    public class TreeDimDTO
     {
-        public int Ordinal { get; set; }
-        public int AttrTreeID { get; set; }
-        public int A4LeafID { get; set; }
-        public string A4Code { get; set; }
-        public string A4AlternateCode { get; set; }
-        public string A4NodeName { get; set; }
+        public byte Index { get; set; }
+        public Int16 TreeID { get; set; }
     }
 
-    public class StatusDTO
-    {
-        public int T5LeafID { get; set; }
-        public byte StatusValue { get; set; }
-        public int ColorRGBValue { get; set; }
-        public long TransitCtrlValue { get; set; }
-    }
 }

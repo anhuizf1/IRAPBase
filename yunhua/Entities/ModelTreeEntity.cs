@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
- 
+
     /// <summary>
     /// 树模型的实体
     /// </summary>
-    [Table("stb051")]
-    public class ModelTreeEntity:BaseEntity
+    public class ModelTreeEntity : BaseEntity
     {
         public ModelTreeEntity()
         {
@@ -29,6 +28,7 @@ namespace IRAPBase.Entities
             DefaultAttrMgmtSetting = "";
             DefaultTVCtrlParameters = "";
         }
+        [DatabaseGenerated(System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption.None)]
         public Int16 TreeID { get; set; }
         public int NameID { get; set; }
         public int LeafLimit { get; set; }
@@ -50,16 +50,16 @@ namespace IRAPBase.Entities
         public bool UniqueEntityCode { get; set; }
         public bool UniqueNodeCode { get; set; }
         public bool AutoCodeGenerating { get; set; }
-        public int OrderByMode { get; set; }
+        public byte OrderByMode { get; set; }
         public bool UsingTreeViewCache { get; set; }
-        public bool ExclusiveLevel { get; set; }
+        public byte ExclusiveLevel { get; set; }
         public Int16 DefaultLanguageID { get; set; }
         public int HistoricLeafIconID { get; set; }
         public string ProcOnNodeChange { get; set; }
         public string ProcOnAttrSave { get; set; }
         public string ProcOnETL { get; set; }
         public string StatisticRule { get; set; }
-        public DateTime LastUpdatedTime { get; set; }
+        public DateTime? LastUpdatedTime { get; set; }
         public int ClassifyingAttrNameID { get; set; }
         public int StateAttrNameID { get; set; }
         public int InstantaneousAttrNameID { get; set; }
@@ -72,24 +72,60 @@ namespace IRAPBase.Entities
         //关联名称空间表
     }
 
+
     /// <summary>
-    /// 树模型的映射
+    /// 系统树模型
     /// </summary>
-    public class ModelTreeEntityMap : EntityTypeConfiguration<ModelTreeEntity>
+    [Table("stb051")]
+    public class ModelSysTreeEntity : ModelTreeEntity
+    {
+
+    }
+
+    /// <summary>
+    /// 系统树模型的映射
+    /// </summary>
+    public class ModelSysTreeEntityMap : EntityTypeConfiguration<ModelSysTreeEntity>
     {
         /// <summary>
         /// 构造函数
         /// </summary>
-        public ModelTreeEntityMap()
+        public ModelSysTreeEntityMap()
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t =>  t.TreeID);
+            HasKey(t => t.TreeID);
             // Property(t => t.TreeID).IsRequired();
             Property(t => t.TreeID).IsRequired();
             //   Property(p => p.LanguageID).HasColumnType("smallint");
         }
     }
 
+    /// <summary>
+    /// 业务树模型
+    /// </summary>
+    [Table("stb056")]
+    public class ModelBizTreeEntity : ModelTreeEntity
+    {
 
+    }
+
+    /// <summary>
+    /// 系统树模型的映射
+    /// </summary>
+    public class ModelBizTreeEntityMap : EntityTypeConfiguration<ModelBizTreeEntity>
+    {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ModelBizTreeEntityMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => t.TreeID);
+            // Property(t => t.TreeID).IsRequired();
+            Property(t => t.TreeID).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 }

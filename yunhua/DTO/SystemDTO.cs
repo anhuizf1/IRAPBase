@@ -30,4 +30,14 @@ namespace IRAPBase.DTO
         public Int16 DataSrcLinkID { get; set; }                         //  --默认数据源连接
         public string Application { get; set; }               // --应用服务器地址
     }
+
+
+    public class ProgLanguageDTO
+    {
+
+        public int ProgLangID { get; set; }
+
+        public string ProgLanuage { get; set; }
+  
+    }
 }

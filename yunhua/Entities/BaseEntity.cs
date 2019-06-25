@@ -11,6 +11,6 @@ namespace IRAPBase.Entities
     /// </summary>
     public abstract class BaseEntity
     {
-
+      
     }
 }

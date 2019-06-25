@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,15 @@ namespace IRAPBase.Entities
     [Table("stb106")]
     public class ModelTreeRowSet : BaseEntity
     {
+        public ModelTreeRowSet()
+        {
+            RSAttrTBLName = "";
+            DicingFilter = "";
+            ProcOnSave = "";
+            ProcOnETL = "";
+            ProcOnVersionApply = "";
+            LastUpdatedTime = DateTime.Now;
+        }
         public Int16 TreeID { get; set; }    //树标识
         public byte RowSetID { get; set; }    // 行集序号
         public int RSAttrNameID { get; set; }    //行集名称标识
@@ -27,5 +37,21 @@ namespace IRAPBase.Entities
         public bool CommunityIndependent { get; set; }    //是否为社区隔离的
         public int T3LeafID { get; set; }     //功能标识（用途未知）
 
+    }
+
+
+    public class ModelTreeRowSetMap : EntityTypeConfiguration<ModelTreeRowSet>
+    {
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ModelTreeRowSetMap()
+        {
+            //表定义
+            //ToTable("stb031_Ex1");
+            HasKey(t => new { t.TreeID, t.RowSetID });
+            Property(t => t.RSAttrTBLName).IsRequired();
+            // Property(p => p.LanguageID).HasColumnType("smallint");
+        }
     }
 }

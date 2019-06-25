@@ -152,7 +152,6 @@ namespace IRAPBase
         /// <returns></returns>
         public override int SaveChanges()
         {
-
             return base.SaveChanges();
         }
         /// <summary>
