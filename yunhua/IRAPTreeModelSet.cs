@@ -261,8 +261,8 @@ namespace IRAPBase
 
             var treeList = from a in trees
                            join b in namespaces on a.NameID equals b.NameID
-                           join c in namespaces on a.EntityCodeNameID equals c.NameID
-                           join d in namespaces on a.AlternateCodeNameID equals d.NameID
+                           join c in namespaces on a.EntityCodeNameID equals c.NameID into x  from cc in x.DefaultIfEmpty()
+                           join d in namespaces on a.AlternateCodeNameID equals d.NameID  into t from dd in t.DefaultIfEmpty()
                            orderby a.TreeID
                            select new TreeModelDTO
                            {
@@ -272,8 +272,8 @@ namespace IRAPBase
                                LeafLimit = a.LeafLimit,
                                GenAttrTBLName = a.EntityAttrTBName,
                                NodeAttrTBName = a.NodeAttrTBName,
-                               PrimaryCodeName = c.NameDescription,
-                               AlternateCodeName = d.NameDescription,
+                               PrimaryCodeName = cc.NameDescription,
+                               AlternateCodeName = dd.NameDescription,
                                ShareToAll = a.ShareToAll,
                                UniqueEntityCode = a.UniqueEntityCode,
                                UniqueNodeCode = a.UniqueNodeCode,
@@ -291,8 +291,10 @@ namespace IRAPBase
             var namespaces2 = mdmdb.Set<SysNameSpaceMDMEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
             var treeList2 = from a in trees2
                             join b in namespaces2 on a.NameID equals b.NameID
-                            join c in namespaces2 on a.EntityCodeNameID equals c.NameID
-                            join d in namespaces2 on a.AlternateCodeNameID equals d.NameID
+                            join c in namespaces2 on a.EntityCodeNameID equals c.NameID into x
+                            from cc in x.DefaultIfEmpty()
+                            join d in namespaces2 on a.AlternateCodeNameID equals d.NameID into t
+                            from dd in t.DefaultIfEmpty()
                             orderby a.TreeID
                             select new TreeModelDTO
                             {
@@ -302,8 +304,8 @@ namespace IRAPBase
                                 LeafLimit = a.LeafLimit,
                                 GenAttrTBLName = a.EntityAttrTBName,
                                 NodeAttrTBName = a.NodeAttrTBName,
-                                PrimaryCodeName = c.NameDescription,
-                                AlternateCodeName = d.NameDescription,
+                                PrimaryCodeName = cc.NameDescription,
+                                AlternateCodeName = dd.NameDescription,
                                 ShareToAll = a.ShareToAll,
                                 UniqueEntityCode = a.UniqueEntityCode,
                                 UniqueNodeCode = a.UniqueNodeCode,

@@ -505,11 +505,17 @@ namespace IRAPBase
                 _nodes = new Repository<ETreeSysDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 _leaves = new Repository<ETreeSysLeaf>(_db).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
             }
-            else
+            else if (_treeID>100 && _treeID <= 1000)
             {
                 _nodes = new Repository<ETreeBizDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 //  _leaves = new Repository<ETreeBizLeaf>(_db).Table;
                 _leaves = _db.Set<ETreeBizLeaf>().Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+            }
+            else
+            {
+                _nodes = new Repository<ETreeBizDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
+                //  _leaves = new Repository<ETreeBizLeaf>(_db).Table;
+                _leaves = _db.Set<ETreeRichLeaf>().Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
             }
             //加载树模型
             _treeModel = new IRAPTreeModel(_treeID);

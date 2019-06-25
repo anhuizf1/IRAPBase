@@ -65,8 +65,8 @@ namespace IRAPBase
         /// </summary>
         public List<TreeClassifyModelDTO> GetClassify()
         {
-            Log.InstanceID.WriteMsg<IRAPTreeModel>($"参数 {_treeID} ", Enums.LogType.DEBUG);
-             
+           Log.InstanceID.WriteMsg<IRAPTreeModel>(Enums.LogType.DEBUG,$"参数 {_treeID} ");
+
             return _classifySet.Join(_namespaces, a => a.AttrNameID, b => b.NameID, (a, b) =>
             new TreeClassifyModelDTO { AttrIndex = a.AttrIndex, AttrName = b.NameDescription, AttrTreeID = a.AttrTreeID, SaveChangeHistory = a.SaveChangeHistory })
               .OrderBy(c => c.AttrIndex).ToList();
