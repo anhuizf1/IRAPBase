@@ -58,6 +58,7 @@ namespace IRAPBase.Entities
             A4AlternateCode = "";
             A4DescInEnglish = "";
             A4NodeName = "";
+            A4NameID = 0;
         }
         public long PartitioningKey { get; set; }
         //public Int16 TreeID { get; set; }
@@ -75,6 +76,7 @@ namespace IRAPBase.Entities
         public string A4Code { get; set; }
         public string A4AlternateCode { get; set; }
         //public string A4NameID { get; set; }
+        public int A4NameID { get; set; }
         public string A4NodeName { get; set; }
         public string A4DescInEnglish { get; set; }
         public long MDMLogID { get; set; }
@@ -158,7 +160,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal });
+            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal,t.VersionLE });
            // Property(t => t.TreeID).IsRequired();
             Property(t => t.A4LeafID).IsRequired();
             Property(t => t.LeafID).IsRequired();
@@ -172,7 +174,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal });
+            HasKey(t => new { t.PartitioningKey, t.LeafID, t.Ordinal ,t.VersionLE});
 
             Property(t => t.Ordinal).IsRequired();
             Property(t => t.LeafID).IsRequired();

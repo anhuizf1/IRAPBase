@@ -13,7 +13,7 @@ using TestConsole.Entities;
 
 namespace TestConsole
 {
-   public class IRAPBizTest:IRAPBizBase
+   public class IRAPBizTest:IRAPWorkbench
     {
         public void Test()
         {

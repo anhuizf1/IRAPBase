@@ -12,47 +12,71 @@ using System.Collections;
 using IRAPBase.DTO;
 using System.Data.Entity;
 using Newtonsoft.Json.Linq;
+using IRAPShared;
 
 namespace IRAPBase
 {
     /// <summary>
-    /// 所有WebAPI接口类继承此类，目的是为子类提供常用的序列化、验收令牌等便利的方法
+    /// 所有WebAPI接口类继承此类，目的是为子类提供常用的序列化、验收令牌等便利的方法 MarshalByRefObject
     /// </summary>
-    public class IRAPBizBase
+    public class IRAPWorkbench: MarshalByRefObject
     {
-
         private IDbContext _db = null;
         private int _communityID = 0;
         private int _treeID = 0;
         private int _leafID = 0;
         //private string _dbName = "";
         private IRAPTreeBase _irapTreeBase = null;
- 
         /// <summary>
         /// 当前社区
         /// </summary>
-        public int CommunityID { get { return _communityID; } }
-        //当前数据库连接上下文
+        public int CommunityID { get { return _communityID; } set { _communityID = value; } }
+        /// <summary>
+        /// //当前数据库连接上下文
+        /// </summary>
         public IDbContext DB { get { return _db; } }
+
+        /// <summary>
+        /// 使用动态类型返回结果
+        /// </summary>
+        protected dynamic BackResult = new System.Dynamic.ExpandoObject();
+        /// <summary>
+        /// 返回值
+        /// </summary>
+        protected dynamic APIBag = new APIResult();
+
+        private LoginEntity logInfo = null;
         /// <summary>
         /// 默认创建IRAPMDM的数据库连接
         /// </summary>
-        public IRAPBizBase()
+        public IRAPWorkbench()
         {
             _db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+        }
+
+        /// <summary>
+        /// 返回Json错误
+        /// </summary>
+        /// <param name="errCode"></param>
+        /// <param name="errText"></param>
+        /// <returns></returns>
+        public string BackJson(int errCode, string errText)
+        {
+            BackResult.ErrCode = errCode;
+            BackResult.ErrText = errText;
+            return ToJson();
         }
         /// <summary>
         /// 切换数据库
         /// </summary>
         /// <param name="dbName">数据库名，例如：IRAP,IRAPMDM</param>
-        /// <param name="communityID">社区</param>
         /// <returns>返回数据库上下文</returns>
         public IDbContext UsingContext(string dbName)
         {
-           //if (_communityID > 0)
-           // {
-           //     _communityID = communityID;
-           // }
+            //if (_communityID > 0)
+            // {
+            //     _communityID = communityID;
+            // }
             if (_db.DataBase.Connection.Database == dbName)
             {
                 return _db;
@@ -111,7 +135,7 @@ namespace IRAPBase
         /// <param name="treeID">树标识</param>
         /// <param name="leafID">叶标识</param>
         /// <returns></returns>
-       
+
         public IRAPTreeBase GetIRAPTreeBase(int communityID, int treeID, int leafID)
         {
             _communityID = communityID;
@@ -128,13 +152,37 @@ namespace IRAPBase
         /// <param name="treeID"></param>
         /// <param name="leafID"></param>
         /// <returns></returns>
-        public IRAPTreeBase GetIRAPTreeBase( int treeID, int leafID)
+        public IRAPTreeBase GetIRAPTreeBase(int treeID, int leafID)
         {
-            if (_communityID==0)
+            if (_communityID == 0)
+            { throw new Exception("在调用GetIRAPTreeBase时未指定社区。"); }
             _treeID = treeID;
             _leafID = leafID;
             _irapTreeBase = new IRAPTreeBase(_db, _communityID, _treeID, _leafID);
             return _irapTreeBase;
+        }
+
+        /// <summary>
+        /// 获取IRAPTreeSet对象（指定社区共享上下文）
+        /// </summary>
+        /// <param name="communityID"></param>
+        /// <param name="treeID"></param>
+        /// <returns></returns>
+        public IRAPTreeSet GetIRAPTreeSet(int communityID, int treeID)
+        {
+            _communityID = communityID;
+            return new IRAPTreeSet(_db, communityID, treeID);
+        }
+        /// <summary>
+        /// 获取IRAPTreeSet对象 
+        /// </summary>
+        /// <param name="treeID"></param>
+        /// <returns></returns>
+        public IRAPTreeSet GetIRAPTreeSet(int treeID)
+        {
+            if (_communityID == 0)
+            { throw new Exception("在调用GetIRAPTreeSet时未指定社区。"); }
+            return new IRAPTreeSet(_db, _communityID, treeID);
         }
         /// <summary>
         /// 业务操作类：申请交易号，保存事实，查询事实等
@@ -142,15 +190,11 @@ namespace IRAPBase
         /// <param name="access_token"></param>
         /// <param name="opID"></param>
         /// <returns></returns>
-        public IRAPOperBase GetIRAPOperBase(string access_token,int opID)
+        public IRAPOperBase GetIRAPOperBase(string access_token, int opID)
         {
             return new IRAPOperBase(_db, access_token, opID);
         }
-        /// <summary>
-        /// 使用动态类型返回结果
-        /// </summary>
-        protected dynamic BackResult = new System.Dynamic.ExpandoObject();
-        private LoginEntity logInfo = null;
+
         #region//序列化相关
 
         /// <summary>
@@ -209,7 +253,7 @@ namespace IRAPBase
         /// <returns></returns>
         public virtual JArray GetJArray(string inputJson)
         {
-            return  JArray.Parse(inputJson);
+            return JArray.Parse(inputJson);
         }
 
         /// <summary>
@@ -320,7 +364,7 @@ namespace IRAPBase
         /// </summary>
         /// <typeparam name="T">数据库实体泛型</typeparam>
         /// <returns>数据库实体集合</returns>
-        public IDbSet<T> GetTableSet<T>() where T: BaseEntity
+        public IDbSet<T> GetTableSet<T>() where T : BaseEntity
         {
             return _db.Set<T>();
         }
@@ -417,25 +461,34 @@ namespace IRAPBase
         /// <summary>
         /// 开启一个新事务
         /// </summary>
-        public void BeginTransaction()
+        public DbContextTransaction BeginTransaction()
         {
             if (_db.DataBase.CurrentTransaction != null)
             {
                 _db.DataBase.CurrentTransaction.Rollback();
                 _db.DataBase.CurrentTransaction.Dispose();
             }
-            _db.DataBase.BeginTransaction();
+            return _db.DataBase.BeginTransaction();
         }
         /// <summary>
         /// 对默认数据库连接进行提交
         /// </summary>
-        public void Commit()
+        public void SaveChangeAndCommit()
         {
             _db.SaveChanges();
             if (_db.DataBase.CurrentTransaction != null)
             {
                 _db.DataBase.CurrentTransaction.Commit();
             }
+        }
+    
+        /// <summary>
+        /// 保存变化
+        /// </summary>
+        /// <returns></returns>
+        public int SaveChanges()
+        {
+            return _db.SaveChanges();
         }
 
         #endregion
@@ -482,10 +535,10 @@ namespace IRAPBase
         }
 
 
-       /// <summary>
-       /// 获取数据库时间
-       /// </summary>
-       /// <returns></returns>
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        /// <returns></returns>
         public DateTime DBNow()
         {
             var now = _db.DataBase.SqlQuery<DateTime?>("select GetDate()").First();

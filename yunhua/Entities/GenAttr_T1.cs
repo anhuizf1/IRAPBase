@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
+    [Table("stb031")]
     public class GenAttr_T1 : BaseGenAttrEntity
     {
         public string BriefDesc { get; set; }
@@ -28,7 +30,7 @@ namespace IRAPBase.Entities
         public GenAttr_T1Map()
         {
             //表定义
-            ToTable("stb031");
+            //ToTable("stb031");
             HasKey(t => new { t.PartitioningKey, t.EntityID });
             Property(t => t.BriefDesc).IsRequired();
 

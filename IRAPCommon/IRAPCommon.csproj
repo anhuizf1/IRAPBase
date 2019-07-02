@@ -48,7 +48,9 @@
     <Compile Include="Des3Util.cs" />
     <Compile Include="hardware.cs" />
     <Compile Include="HTTPUtil.cs" />
+    <Compile Include="IRAPMath.cs" />
     <Compile Include="IRAPSHA.cs" />
+    <Compile Include="IRAPStringParser.cs" />
     <Compile Include="URLEncode.cs" />
     <Compile Include="ZipUtil.cs" />
     <Compile Include="IRAPAES.cs" />

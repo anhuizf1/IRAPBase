@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using IRAPBase.Entities;
 using System.Data.Entity;
+using IRAPBase.Serialize;
+using System.Linq.Expressions;
 
 namespace IRAPBase
 {
@@ -16,11 +18,11 @@ namespace IRAPBase
     public class IRAPOperBase
     {
         private int _opID = 0;
-  
+
         private string access_token = string.Empty;
         private int _communityID = 0;
         protected IDbContext _db = null;
-
+        private LoginEntity log = null;
         /// <summary>
         /// 根据实体类型获取存储对象DbSet,以便操作实体（增删改查）
         /// </summary>
@@ -35,6 +37,7 @@ namespace IRAPBase
         /// </summary>
         private int CommunityID { get { return _communityID; } }
 
+        private long PK { get { return _communityID * 10000L; } }
         /// <summary>
         /// 交易日志、辅助交易表分区键值
         /// </summary>
@@ -43,12 +46,17 @@ namespace IRAPBase
             get { return (Int64)DateTime.Now.Year * 100000000L + (Int64)_communityID; }
         }
 
+        private long TempFactPK
+        {
+            get { return (Int64)_communityID * 10000L + _opID; }
+        }
         /// <summary>
         /// 临时事实、固化事实、作废事实分区键值，以及辅助事实FactPartitioningKey
         /// </summary>
-        private long FactPK {
+        private long HisFactPK
+        {
 
-            get { return  (Int64)DateTime.Now.Year * 1000000000000L + (Int64)_communityID * 10000L + (Int64)_opID; }
+            get { return (Int64)DateTime.Now.Year * 1000000000000L + (Int64)_communityID * 10000L + (Int64)_opID; }
         }
 
         /// <summary>
@@ -56,7 +64,7 @@ namespace IRAPBase
         /// </summary>
         private long RSFactPK
         {
-            get {   return (Int64)DateTime.Now.Year * 1000000000000L + (Int64)_communityID * 10000L + (Int64)_opID; }
+            get { return (Int64)DateTime.Now.Year * 1000000000000L + (Int64)_communityID * 10000L + (Int64)_opID; }
         }
 
         /// <summary>
@@ -68,6 +76,16 @@ namespace IRAPBase
         {
             return (Int64)_communityID * 1000000000000L + (Int64)dimLeafID * 10000L + (Int64)DateTime.Now.Year;
         }
+
+        private long[] GetTempFactPKList(int[] opIDs)
+        {
+            long[] fPKArray = new long[opIDs.Length];
+            for (int i = 0; i <= opIDs.Length - 1; i++)
+            {
+                fPKArray[i] = PK + opIDs[i];
+            }
+            return fPKArray;
+        }
         /// <summary>
         /// 开启业务操作的基础
         /// </summary>
@@ -76,11 +94,16 @@ namespace IRAPBase
         /// <param name="opID"></param>
         public IRAPOperBase(string dbName, string access_token, int opID)
         {
-       
             _opID = opID;
             _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
             this.access_token = access_token;
-            _communityID = new IRAPLog().GetCommunityID(access_token);
+            var logDB = new IRAPLog();
+            
+            log = logDB.GetLogIDByToken(access_token);
+            if (log != null)
+            {
+                _communityID = (int)log.PartitioningKey / 10000;
+            }
             if (_communityID == 0)
             {
                 throw new Exception($"令牌access_token={access_token}无效！");
@@ -97,7 +120,12 @@ namespace IRAPBase
             _db = db;
             _opID = opID;
             this.access_token = access_token;
-            _communityID = new IRAPLog().GetCommunityID(access_token);
+            var logDB = new IRAPLog();
+            log = logDB.GetLogIDByToken(access_token);
+            if (log != null)
+            {
+               _communityID= (int)log.PartitioningKey / 10000;
+            }
             if (_communityID == 0)
             {
                 throw new Exception($"令牌access_token={access_token}无效！");
@@ -109,9 +137,9 @@ namespace IRAPBase
         /// </summary>
         /// <param name="cnt">申请数量</param>
         /// <returns>事实编号</returns>
-        public long GetFactNo (int cnt = 1)
+        public long GetFactNo(int cnt = 1)
         {
-           var resDTO= IRAPSequence.GetSequence("NextFactNo", cnt);
+            var resDTO = IRAPSequence.GetSequence("NextFactNo", cnt);
             if (resDTO.ErrCode != 0)
             {
                 throw new Exception(resDTO.ErrText);
@@ -126,7 +154,7 @@ namespace IRAPBase
         /// <param name="opNodes">操作类型清单,多个用逗号隔开</param>
         /// <param name="voucherNo">票据号</param>
         /// <returns></returns>
-        public long GetTransactNo(int cnt = 1, string remark = "", string opNodes="", string voucherNo = "")
+        public long GetTransactNo(int cnt = 1, string remark = "", string opNodes = "", string voucherNo = "")
         {
             try
             {
@@ -134,7 +162,6 @@ namespace IRAPBase
                 {
                     opNodes = (-_opID).ToString();
                 }
-                LoginEntity log = new IRAPLog().GetLogIDByToken(access_token);
                 if (log == null)
                 {
                     throw new Exception("申请交易号时出错，令牌无效！");
@@ -180,9 +207,9 @@ namespace IRAPBase
             }
             e.OpID = _opID;
             e.BusinessDate = DateTime.Now;
-            e.PartitioningKey = FactPK;
+            e.PartitioningKey = TempFactPK;
             TableSet(e).Add(e);
-           // _db.SaveChanges();
+            // _db.SaveChanges();
             return new IRAPError(0, "保存成功！");
         }
         /// <summary>
@@ -190,9 +217,53 @@ namespace IRAPBase
         /// </summary>
         /// <param name="factID">事实编号</param>
         /// <returns></returns>
-        public virtual IRAPError FixedFact(long  factID)
+        public virtual FactEntity GetFixedFact(long factID)
         {
             throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 临时事实
+        /// </summary>
+        /// <param name="factID"></param>
+        /// <param name="opID"></param>
+        /// <returns></returns>
+        public virtual FactEntity GetTempFact(long factID,int opID)
+        {
+         
+            return _db.Set<FactEntity>().FirstOrDefault(c =>  c.PartitioningKey ==TempFactPK  && c.OpID==opID && c.FactID == factID);
+            //throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 获取临时事实
+        /// </summary>
+        /// <param name="transactNo"></param>
+        /// <param name="opIDs"></param>
+        /// <returns></returns>
+        public virtual List<FactEntity> GetTempFactList(long transactNo, params int[] opIDs)
+        {
+            long[] fPKArray = GetTempFactPKList(opIDs);
+            return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.TransactNo == transactNo).ToList();
+        }
+       
+        /// <summary>
+        /// 根据正则表达式获取事实表
+        /// </summary>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public virtual List<FactEntity> GetTempFactList(Expression<Func<FactEntity, bool> > where )
+        {
+            return _db.Set<FactEntity>().Where(where).ToList();
+        }
+        /// <summary>
+        /// 根据LinkFactID获取
+        /// </summary>
+        /// <param name="linkFactID"></param>
+        /// <param name="opIDs"></param>
+        /// <returns></returns>
+        public virtual List<FactEntity> GetTempFactListByLinkFactID(long linkFactID, int[] opIDs)
+        {
+            long[] fPKArray = GetTempFactPKList(opIDs);
+            return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.LinkedFactID == linkFactID).ToList();
         }
         /// <summary>
         /// 保存辅助事实
@@ -202,12 +273,12 @@ namespace IRAPBase
         public virtual IRAPError SaveAuxFact(BaseAuxFact e)
         {
             e.PartitioningKey = AuxFactPK(0);
-            e.FactPartitioningKey = FactPK;
+            e.FactPartitioningKey = TempFactPK;
             TableSet(e).Add(e);
-          //  _db.SaveChanges();
+            //  _db.SaveChanges();
             return new IRAPError(0, "辅助保存成功！");
         }
-     
+
         /// <summary>
         /// 保存行集事实
         /// </summary>
@@ -220,7 +291,7 @@ namespace IRAPBase
                 r.PartitioningKey = RSFactPK;
                 TableSet(r).Add(r);
             }
-           // _db.SaveChanges();
+            // _db.SaveChanges();
             return new IRAPError(0, "行集保存成功！");
         }
         /// <summary>
@@ -242,7 +313,7 @@ namespace IRAPBase
         public virtual IRAPError SaveUTBOrLog(List<BaseEntity> list)
         {
             foreach (BaseEntity r in list)
-            {      
+            {
                 TableSet(r).Add(r);
             }
             //  _db.SaveChanges();
@@ -255,7 +326,7 @@ namespace IRAPBase
         /// <param name="transactNo">交易号</param>
         /// <param name="deleteFact">是否删除事实(默认是)</param>
         /// <returns></returns>
-        public virtual IRAPError UnCheckTransact(long transactNo, bool deleteFact=true)
+        public virtual IRAPError UnCheckTransact(long transactNo, bool deleteFact = true)
         {
 
             TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
@@ -270,8 +341,8 @@ namespace IRAPBase
             if (deleteFact)
             {
                 IDbSet<FactEntity> tempFactList = _db.Set<FactEntity>();
-                var list=  tempFactList.Where(c => c.TransactNo == t1.TransactNo && c.PartitioningKey== FactPK);
-                foreach(FactEntity r in list)
+                var list = tempFactList.Where(c => c.TransactNo == t1.TransactNo && c.PartitioningKey == TempFactPK);
+                foreach (FactEntity r in list)
                 {
                     tempFactList.Remove(r);
                 }
@@ -281,7 +352,13 @@ namespace IRAPBase
         }
 
 
-        public IRAPError CheckTransact(long transactNo, string userCode)
+        /// <summary>
+        /// 复核交易
+        /// </summary>
+        /// <param name="transactNo"></param>
+        /// <param name="userCode"></param>
+        /// <returns></returns>
+        public IRAPError CheckTransact(long transactNo)
         {
             TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
 
@@ -289,11 +366,78 @@ namespace IRAPBase
             {
                 throw new Exception($"交易号：{t1.TransactNo} 不存在！");
             }
-            t1.Checked = userCode;
+            t1.Checked = log.UserCode;
             t1.OkayTime = DateTime.Now;
             t1.Status = 3;
             SaveChanges();
-            return new IRAPError(0,"交易复核成功！");
+            return new IRAPError(0, "交易复核成功！");
+        }
+        /// <summary>
+        /// 交易撤销到回收站
+        /// </summary>
+        /// <param name="transactNo"></param>
+        /// <returns></returns>
+        public IRAPError DeleteToRecycle(long transactNo)
+        {
+            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
+
+            if (t1 == null)
+            {
+                throw new Exception($"交易号：{t1.TransactNo} 不存在！");
+            }
+            if (t1.Status > 3)
+            {
+                throw new Exception($"交易号：{t1.TransactNo} 已被撤销或已被固化！{t1.Status}");
+            }
+            t1.Revoker = log.UserCode;
+            t1.RevokeTime = DateTime.Now;
+            t1.Status = 4;
+            //移动到Recycle
+            var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.TransactNo == transactNo);
+
+            int i = 0;
+            foreach (var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[撤销]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i == 0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
+            SaveChanges();
+            return new IRAPError(0, "交易撤销成功！");
+        }
+        /// <summary>
+        /// 删除主事实
+        /// </summary>
+        /// <param name="factID"></param>
+        /// <returns></returns>
+        public IRAPError DeleteToRecycleByFactID(long factID)
+        {
+
+            //移动到Recycle
+            var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.FactID == factID);
+            int i = 0;
+            foreach (var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[删除]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i == 0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
+            SaveChanges();
+            return new IRAPError(0, "事实删除成功！");
         }
         /// <summary>
         /// 提交变更到数据库
@@ -332,7 +476,8 @@ namespace IRAPBase
         /// <summary>
         /// 回滚事务
         /// </summary>
-        public void RollBack() {
+        public void RollBack()
+        {
 
             if (_db.DataBase.CurrentTransaction != null)
             {
@@ -357,10 +502,10 @@ namespace IRAPBase
         /// <param name="communityID"></param>
         /// <param name="transactNo"></param>
         /// <returns></returns>
-        public static  TransactEntity GetTransact(IDbContext db,int communityID, long transactNo)
+        public static TransactEntity GetTransact(IDbContext db, int communityID, long transactNo)
         {
             long[] dict = new long[] { GetTransPK(communityID, DateTime.Now.Year), GetTransPK(communityID, DateTime.Now.Year - 1) };
-            return   db.Set<TransactEntity>().FirstOrDefault(c => dict.Contains(c.PartitioningKey) && c.TransactNo == transactNo);
+            return db.Set<TransactEntity>().FirstOrDefault(c => dict.Contains(c.PartitioningKey) && c.TransactNo == transactNo);
         }
 
         /// <summary>
@@ -369,38 +514,48 @@ namespace IRAPBase
         /// <param name="db">数据库上下文</param>
         /// <param name="communityID">社区</param>
         /// <returns></returns>
-        public static IQueryable<TransactEntity> GetTransactList(IDbContext db ,int communityID)
+        public static IQueryable<TransactEntity> GetTransactList(IDbContext db, int communityID)
         {
             long[] dict = new long[] { GetTransPK(communityID, DateTime.Now.Year), GetTransPK(communityID, DateTime.Now.Year - 1) };
-            return db.Set<TransactEntity>().Where(c => dict.Contains(c.PartitioningKey)  );
+            return db.Set<TransactEntity>().Where(c => dict.Contains(c.PartitioningKey));
         }
         //查询辅助事实
         //查询行集事实
 
+        /// <summary>
+        /// 计算PK值
+        /// </summary>
+        /// <param name="communityID">社区标识</param>
+        /// <param name="treeID">树标识</param>
+        /// <returns></returns>
+        public static long PartitioningKey(int communityID, int treeID)
+        {
+            return communityID * 10000L + treeID;
+        }
         /// <summary>
         /// 交易日志、辅助交易表分区键值
         /// </summary>
         /// <param name="communityID"></param>
         /// <param name="yearID"></param>
         /// <returns></returns>
-        public static long GetTransPK(int communityID , int yearID)
+        public static long GetTransPK(int communityID, int yearID)
         {
-            return (Int64)yearID * 100000000L + (Int64)communityID;  
+            return (Int64)yearID * 100000000L + (Int64)communityID;
         }
 
         /// <summary>
         /// 临时事实、固化事实、作废事实分区键值，以及辅助事实FactPartitioningKey
         /// </summary>
-        public static long GetFactPK(int communityID,int yearID,int opID )
+        public static long GetFactPK(int communityID, int yearID, int opID)
         {
-            return (Int64)yearID * 1000000000000L + (Int64)communityID * 10000L + (Int64)opID; 
+            return (Int64)yearID * 1000000000000L + (Int64)communityID * 10000L + (Int64)opID;
         }
         /// <summary>
         /// 行集事实分区键值
         /// </summary>
-        public static long GetRSFactPK(int communityID , int yearID ,int opID)
+        public static long GetRSFactPK(int communityID, int yearID, int opID)
         {
-            return (Int64)yearID * 1000000000000L + (Int64)communityID * 10000L + (Int64)opID;  
+            return (Int64)yearID * 1000000000000L + (Int64)communityID * 10000L + (Int64)opID;
         }
         /// <summary>
         /// 辅助事实表中PartitioningKey字段

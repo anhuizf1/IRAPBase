@@ -32,4 +32,10 @@ namespace IRAPBase.Entities
     {
 
     }
+
+    [Table("SysNamespaces")]
+    public class SysNameSpaceMDMEntity : NameSpaceEntity
+    {
+
+    }
 }
