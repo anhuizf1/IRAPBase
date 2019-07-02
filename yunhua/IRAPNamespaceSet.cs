@@ -107,6 +107,9 @@ namespace IRAPBase
         }
     }
 
+    /// <summary>
+    /// IRAP数据库中的003名称集合类
+    /// </summary>
     internal class IRAPSysNamespaceSet : IIRAPNamespaceSet
     {
         public IRAPSysNamespaceSet() { }
@@ -565,6 +568,9 @@ namespace IRAPBase
         }
     }
 
+    /// <summary>
+    /// IRAPMDM数据库中的004表名称集合类
+    /// </summary>
     internal class IRAPBizNamespaceSet : IIRAPNamespaceSet
     {
         public IRAPBizNamespaceSet() { }
