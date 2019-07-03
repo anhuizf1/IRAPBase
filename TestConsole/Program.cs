@@ -27,22 +27,28 @@ namespace TestConsole
 
             _log.Warn("测试!");
 
-            var db= DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            var db= DBContextFactory.Instance.CreateContext("IRAPContext");
+
+            IRAPParameterEntity p = new IRAPParameterEntity() { PartitioningKey=0,  ParameterID=1  
+                ,ParameterNameID=1,ParameterValue=12 ,ParameterValueStr="test", TimeUpdated=DateTime.Now, UpdatedBy="admin"};
+            //db.Set<IRAPParameterEntity>().Attach(p);
+            db.Entry(p).State = System.Data.Entity.EntityState.Modified;
+            db.SaveChanges();
             // var list= db.Set<ETreeBizClass>().Where(c => c.LeafID == 2361480).ToList();
-            IRAPTreeSet treeSet = new IRAPTreeSet(60038, 105);
-             var list=  treeSet.GetClassifySet(new List<int> { 5334744 });
-             //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
-             //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
 
-             //throw new Exception("Error!");
+            //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
+            //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
 
-           //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
+            //throw new Exception("Error!");
+
+            //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
 
 
-            foreach (var r in list)
-            {
-                Console.WriteLine("{0} {1}", r.TreeID,r.Leaf01);
-            }
+            //foreach (var r in list)
+            //{
+            //    Console.WriteLine("{0} {1}", r.TreeID,r.Leaf01);
+            //}
+            Console.WriteLine("saved.");
             Console.ReadKey();
         }
 
