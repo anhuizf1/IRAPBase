@@ -569,7 +569,7 @@ namespace IRAPBase
 
             try
             {
-                IRAPParameterEntity entity =
+                irapParams.Update(
                     new IRAPParameterEntity()
                     {
                         PartitioningKey = param.PartitioningKey,
@@ -579,8 +579,7 @@ namespace IRAPBase
                         ParameterValueStr = param.ParameterValueStr,
                         UpdatedBy = loginInfo.UserCode,
                         TimeUpdated = DateTime.Now,
-                    };
-                db.Entry(entity).State = EntityState.Modified;
+                    });
                 irapParams.SaveChanges();
 
                 rlt.ErrCode = 0;
@@ -650,7 +649,8 @@ namespace IRAPBase
                         ParameterValueStr = param.ParameterValueStr,
                         UpdatedBy = loginInfo.UserCode,
                         TimeUpdated = DateTime.Now,
-                    });
+                    },
+                    false);
                 irapParams.SaveChanges();
                 rlt.ErrCode = 0;
                 rlt.ErrText = "删除参数成功";
@@ -719,7 +719,8 @@ namespace IRAPBase
                         ParameterValueStr = iParams[0].ParameterValueStr,
                         UpdatedBy = loginInfo.UserCode,
                         TimeUpdated = DateTime.Now,
-                    });
+                    },
+                    false);
                 irapParams.SaveChanges();
                 rlt.ErrCode = 0;
                 rlt.ErrText = "删除参数成功";
@@ -741,7 +742,5 @@ namespace IRAPBase
 
             return rlt;
         }
-
-        // ToDo: 今天就写到这里，明天继续 20190703
     }
 }
