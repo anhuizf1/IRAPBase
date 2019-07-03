@@ -23,17 +23,25 @@ namespace TestConsole
         static void Main(string[] args)
         {
             Logrila.Logging.NLogIntegration.NLogLogger.Use();
+            Logrila.Logging.ILog _log = Logger.Get<Program>();
 
-            IRAPTreeModelSet treeSet = new IRAPTreeModelSet();
-             var list=   treeSet.GetAllTrees();
-          //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
-           //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
-            
-            //throw new Exception("Error!");
-             
+            _log.Warn("测试!");
+
+            var db= DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            // var list= db.Set<ETreeBizClass>().Where(c => c.LeafID == 2361480).ToList();
+            IRAPTreeSet treeSet = new IRAPTreeSet(60038, 105);
+             var list=  treeSet.GetClassifySet(new List<int> { 5334744 });
+             //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
+             //  treemodelSet.CreateATree(206, "保养周期目录树", 1000, 5, true, 2, "", "", 1, "", "", true, false, false, false, 1);
+
+             //throw new Exception("Error!");
+
+           //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
+
+
             foreach (var r in list)
             {
-                Console.WriteLine("{0} {1}", r.TreeID, r.TreeName);
+                Console.WriteLine("{0} {1}", r.TreeID,r.Leaf01);
             }
             Console.ReadKey();
         }

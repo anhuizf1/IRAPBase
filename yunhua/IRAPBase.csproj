@@ -101,6 +101,7 @@
     <Compile Include="Entities\RowSet_T4R2.cs" />
     <Compile Include="Entities\RowSet_T4R3.cs" />
     <Compile Include="Entities\RowSet_T4R4.cs" />
+    <Compile Include="Entities\SystemNodeEntity.cs" />
     <Compile Include="Enums\LogEnumType.cs" />
     <Compile Include="Extend.cs" />
     <Compile Include="IRAPAssembly.cs" />
