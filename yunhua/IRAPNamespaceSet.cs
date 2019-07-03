@@ -33,7 +33,7 @@ namespace IRAPBase
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文) </param>
         /// <param name="nameID">名称标识</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Add(
             int communityID,
             string nameDescription,
@@ -44,7 +44,7 @@ namespace IRAPBase
         /// 修改名称
         /// </summary>
         /// <param name="src">名称对象</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Modify(NameSpaceEntity src);
 
         /// <summary>
@@ -53,14 +53,14 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameID">名称标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Delete(int communityID, int nameID, byte languageID = 30);
 
         /// <summary>
         /// 删除指定的名称
         /// </summary>
         /// <param name="src">名称实体对象</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Delete(NameSpaceEntity src);
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameID">名称标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>NameSpaceEntity对象，如果未获得，则返回null</returns>
         NameSpaceEntity Get(int communityID, int nameID, byte languageID);
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace IRAPBase
         /// </summary>
         /// <param name="communityID">社区标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>NameSpaceEntity对象集，如果未获得，则该集合中的对象数为0</returns>
         List<NameSpaceEntity> Get(int communityID, byte languageID);
     }
 
