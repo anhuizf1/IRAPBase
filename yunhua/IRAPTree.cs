@@ -13,12 +13,7 @@ using System.Reflection;
 namespace IRAPBase
 {
 
-    ///<summary>
-    ///模块编号：02
-    ///作用：IRAP树单实例,明确知道一个叶标识或结点标识时使用
-    ///作者：张峰
-    ///编写日期：2019-02-18
-    ///</summary>
+    #region 废弃的类
     /*
    [Obsolete]
    public class IRAPTree
@@ -359,6 +354,8 @@ namespace IRAPBase
     //}
 
     // }*/
+
+    #endregion
     /// <summary>
     ///模块编号：02
     ///作用：存取树万能类 
@@ -384,7 +381,6 @@ namespace IRAPBase
         protected TreeLeafEntity _leafEntity = null;
         protected IRAPTreeModel _treeModel = null;
         private long[] _PKDict;
-
         protected List<TreeClassifyModelDTO> _treeClassModel = null;
         protected List<TreeTransientModelDTO> _treeTransientModel = null;
         protected List<TreeStatusModelDTO> _treeStatusModel = null;

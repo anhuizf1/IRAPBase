@@ -129,7 +129,8 @@ namespace IRAPBase
             }
             else
             {
-                if (_treeID > 100 && _treeID <= 1000) {
+                if (_treeID > 100 && _treeID <= 1000)
+                {
                     leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
                 }
                 else
@@ -137,7 +138,7 @@ namespace IRAPBase
                     leaves = new Repository<ETreeRichLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
                 }
                 nodes = new Repository<ETreeBizDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-               
+
                 //加载分类属性
                 _treeClass = context.Set<ETreeBizClass>().Where(c => c.PartitioningKey == PK);
                 //加载瞬态属性
@@ -1227,6 +1228,38 @@ namespace IRAPBase
         {
             return _treeClass.Where(c => c.Ordinal == attrIndex && leafSet.Contains(c.LeafID));
         }
+
+        public List<TreeClassifyRowDTO> GetClassifySet(List<int> leafSet)
+        {
+            var list2 = from s in _treeClass.Where(c => leafSet.Contains(c.LeafID))
+                        //where s.Ordinal == (int)attrIndex
+                        group s by s.LeafID into g
+                        select new { g.Key, Rows = g };
+            var resList = new List<TreeClassifyRowDTO>();
+            list2.ToList().ForEach(x =>
+            {
+                TreeClassifyRowDTO r = new TreeClassifyRowDTO()
+                {
+                    TreeID= _treeID,
+                    LeafID = x.Key,
+                    Leaf01 = x.Rows.FirstOrDefault(c => c.Ordinal == 1) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 1).A4LeafID,
+                    Leaf02 = x.Rows.FirstOrDefault(c => c.Ordinal == 2) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 2).A4LeafID,
+                    Leaf03 = x.Rows.FirstOrDefault(c => c.Ordinal == 3) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 3).A4LeafID,
+                    Leaf04 = x.Rows.FirstOrDefault(c => c.Ordinal == 4) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 4).A4LeafID,
+                    Leaf05 = x.Rows.FirstOrDefault(c => c.Ordinal == 5) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 5).A4LeafID,
+                    Leaf06 = x.Rows.FirstOrDefault(c => c.Ordinal == 6) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 6).A4LeafID,
+                    Leaf07 = x.Rows.FirstOrDefault(c => c.Ordinal == 7) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 7).A4LeafID,
+                    Leaf08 = x.Rows.FirstOrDefault(c => c.Ordinal == 8) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 8).A4LeafID,
+                    Leaf09 = x.Rows.FirstOrDefault(c => c.Ordinal == 9) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 9).A4LeafID,
+                    Leaf10 = x.Rows.FirstOrDefault(c => c.Ordinal == 10) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 10).A4LeafID,
+                    Leaf11 = x.Rows.FirstOrDefault(c => c.Ordinal == 11) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 11).A4LeafID,
+                    Leaf12 = x.Rows.FirstOrDefault(c => c.Ordinal == 12) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 12).A4LeafID,
+                };
+                resList.Add(r);
+
+            });
+            return resList;
+        }
         /// <summary>
         /// 根据社区号,树标识，叶标识查询一个实体对象，找不到返回null
         /// </summary>
@@ -1248,7 +1281,7 @@ namespace IRAPBase
             else if (treeID > 100 && treeID <= 1000)
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
-                return db.Set< ETreeBizLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
+                return db.Set<ETreeBizLeaf>().FirstOrDefault(c => pkDict.Contains(c.PartitioningKey) && (short)treeID == c.TreeID && leafID == c.LeafID);
             }
             else
             {
@@ -1274,10 +1307,10 @@ namespace IRAPBase
                 db = DBContextFactory.Instance.CreateContext("IRAPContext");
                 return db.Set<ETreeSysLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
             }
-            else if (treeID>100 && treeID<=1000)
+            else if (treeID > 100 && treeID <= 1000)
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
-                return db.Set<ETreeBizLeaf >().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
+                return db.Set<ETreeBizLeaf>().Where(c => c.PartitioningKey == pk && (short)treeID == c.TreeID && c.Code.Contains(code));
             }
             else
             {

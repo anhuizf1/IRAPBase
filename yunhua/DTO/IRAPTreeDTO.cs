@@ -65,4 +65,39 @@ namespace IRAPBase.DTO
         public Int16 TreeID { get; set; }
     }
 
+
+    /// <summary>
+    /// 分类属性行集（与stb063）
+    /// </summary>
+    public class TreeClassifyRowDTO {
+
+        public int TreeID { get; set; }
+        public int LeafID { get; set; }
+        public int Leaf01 { get; set; }
+        public int Leaf02 { get; set; }
+        public int Leaf03 { get; set; }
+        public int Leaf04 { get; set; }
+        public int Leaf05 { get; set; }
+        public int Leaf06 { get; set; }
+        public int Leaf07 { get; set; }
+        public int Leaf08 { get; set; }
+        public int Leaf09 { get; set; }
+        public int Leaf10 { get; set; }
+        public int Leaf11 { get; set; }
+        public int Leaf12 { get; set; }
+
+        public string  Code01 { get; set; }
+        public string Code02 { get; set; }
+        public string Code03 { get; set; }
+        public string Code04 { get; set; }
+        public string Code05 { get; set; }
+        public string Code06 { get; set; }
+        public string Code07 { get; set; }
+        public string Code08 { get; set; }
+        public string Code09 { get; set; }
+        public string Code10 { get; set; }
+        public string Code11 { get; set; }
+        public string Code12 { get; set; }
+    }
+
 }
