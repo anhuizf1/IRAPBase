@@ -46,7 +46,7 @@ namespace IRAPBase
                 {
                     throw new ArgumentNullException("entity");
                 }
-                this.Entities.Add(entity); ;
+                this.Entities.Add(entity); 
             }
             catch (DbEntityValidationException dbEx)
             {
@@ -70,6 +70,7 @@ namespace IRAPBase
                 {
                     throw new ArgumentNullException("entity");
                 }
+                this.context.Entry(entity).State = EntityState.Modified;
             }
             catch (DbEntityValidationException dbEx)
             {
@@ -95,9 +96,9 @@ namespace IRAPBase
                 }
                 if(!isAttach)
                 {
-                    this.Entities.Attach(entity);
-                    
-                }  
+                   //  this.Entities.Attach(entity);
+                    this.context.Entry(entity).State = EntityState.Deleted;
+                } 
                 this.Entities.Remove(entity);
             }
             catch (DbEntityValidationException dbEx)
