@@ -297,7 +297,7 @@ namespace IRAPBase
             }
 
             IIRAPNamespaceSet namespaceSet =
-                IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys);
+                IRAPNamespaceSetFactory.CreatInstance(NamespaceType.Sys);
             rlt =
                 namespaceSet.Add(
                     communityID,
@@ -519,13 +519,16 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="param">参数DTO对象</param>
         /// <param name="sysLogID">系统登录标识</param>
+        /// <param name="nameID">参数名称的命名标识(输出)</param>
         /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         public IRAPError Modify(
             int communityID,
             IRAPParameterDTO param,
-            long sysLogID)
+            long sysLogID,
+            out int nameID)
         {
             IRAPError rlt = new IRAPError();
+            nameID = 0;
 
             rlt =
                 GetUserInfoWithSysLogID(
@@ -556,7 +559,7 @@ namespace IRAPBase
                         communityID,
                         param.ParameterName,
                         loginInfo.LanguageID,
-                        out int nameID);
+                        out nameID);
                 if (rlt.ErrCode != 0)
                 {
                     return rlt;
