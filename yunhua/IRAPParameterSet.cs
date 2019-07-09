@@ -121,8 +121,8 @@ namespace IRAPBase
                      dtNames
                          .Where(
                              t => t.LanguageID == languageID &&
-                                (t.PartitioningKey == communityID * 10000 ||
-                                 t.PartitioningKey == 0))
+                                (/*t.PartitioningKey == communityID * 10000 ||
+                                 */t.PartitioningKey == 0)) // 命名空间和社区无关
                      on s.ParameterNameID equals l.NameID
                  orderby s.ParameterID
                  select new IRAPParameterDTO()
@@ -167,8 +167,8 @@ namespace IRAPBase
                         .Table
                         .Where(
                             t => t.LanguageID == languageID &&
-                                (t.PartitioningKey == communityID * 10000 ||
-                                 t.PartitioningKey == 0))
+                                (/*t.PartitioningKey == communityID * 10000 ||
+                                 */t.PartitioningKey == 0))  // 命名空间和社区无关
                     on s.ParameterNameID equals l.NameID
                  orderby s.ParameterID
                  select new IRAPParameterDTO()
@@ -237,7 +237,6 @@ namespace IRAPBase
             long sysLogID)
         {
             IRAPError rlt = new IRAPError();
-            paramID = 0;
 
             if (communityID == 0)
             {
