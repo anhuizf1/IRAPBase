@@ -11,9 +11,9 @@ namespace IRAPBase
 {
     public class Log
     {
-        private static Log thisLog = null;
+        private static Log _log = null;
 
-        private static object lockObj = new object();
+        private static readonly object lockObj = new object();
         /// <summary>
         /// 写本地文件日志
         /// </summary>
@@ -60,18 +60,18 @@ namespace IRAPBase
         /// 静态方法获取实例
         /// </summary>
         /// <returns></returns>
-        public static Log InstanceID
+        public static Log Instance
         {
             get
             {
-                if (thisLog == null)
+                if (_log == null)
                 {
-                    thisLog = new Log();
+                    _log = new Log();
                 }
-                return thisLog;
+                return _log;
             }
-
         }
+
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -79,6 +79,7 @@ namespace IRAPBase
         {
             Logrila.Logging.NLogIntegration.NLogLogger.Use();
         }
+
         /// <summary>
         /// 通过NLog写本地文件日志
         /// </summary>
