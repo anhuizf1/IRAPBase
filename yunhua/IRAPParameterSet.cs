@@ -66,6 +66,7 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
+                rlt.ErrCode = 9999;
                 if (error.InnerException.InnerException != null)
                 {
                     rlt.ErrText =
