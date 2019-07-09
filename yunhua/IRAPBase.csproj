@@ -94,6 +94,7 @@
     <Compile Include="Entities\GenAttrEntity.cs" />
     <Compile Include="Entities\GenAttr_T1.cs" />
     <Compile Include="Entities\GenAttr_T4.cs" />
+    <Compile Include="Entities\IRAPCommunityEntity.cs" />
     <Compile Include="Entities\IRAPTreeAttrEntity.cs" />
     <Compile Include="Entities\ModelTreeCorrEntity.cs" />
     <Compile Include="Entities\RowAttrEntity.cs" />
