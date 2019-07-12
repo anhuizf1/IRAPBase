@@ -33,7 +33,7 @@ namespace IRAPBase
         /// <param name="nameDescription">名称</param>
         /// <param name="languageID">语言标识 (默认: 30 简体中文) </param>
         /// <param name="nameID">名称标识</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Add(
             int communityID,
             string nameDescription,
@@ -44,7 +44,7 @@ namespace IRAPBase
         /// 修改名称
         /// </summary>
         /// <param name="src">名称对象</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Modify(NameSpaceEntity src);
 
         /// <summary>
@@ -53,14 +53,14 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameID">名称标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Delete(int communityID, int nameID, byte languageID = 30);
 
         /// <summary>
         /// 删除指定的名称
         /// </summary>
         /// <param name="src">名称实体对象</param>
-        /// <returns></returns>
+        /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         IRAPError Delete(NameSpaceEntity src);
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace IRAPBase
         /// <param name="communityID">社区标识</param>
         /// <param name="nameID">名称标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>NameSpaceEntity对象，如果未获得，则返回null</returns>
         NameSpaceEntity Get(int communityID, int nameID, byte languageID);
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace IRAPBase
         /// </summary>
         /// <param name="communityID">社区标识</param>
         /// <param name="languageID">语言标识</param>
-        /// <returns></returns>
+        /// <returns>NameSpaceEntity对象集，如果未获得，则该集合中的对象数为0</returns>
         List<NameSpaceEntity> Get(int communityID, byte languageID);
     }
 
@@ -107,6 +107,9 @@ namespace IRAPBase
         }
     }
 
+    /// <summary>
+    /// IRAP数据库中的003名称集合类
+    /// </summary>
     internal class IRAPSysNamespaceSet : IIRAPNamespaceSet
     {
         public IRAPSysNamespaceSet() { }
@@ -151,7 +154,8 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                Console.WriteLine(
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(
+                    LogType.ERROR,
                     $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}");
                 return 0;
             }
@@ -177,7 +181,8 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                Console.WriteLine(
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(
+                    LogType.ERROR,
                     $"查找名称标识时发生错误：{error.Message}");
                 return 0;
             }
@@ -206,7 +211,7 @@ namespace IRAPBase
                         out nameID);
                 if (rtn.ErrCode != 0)
                 {
-                    Console.WriteLine(rtn.ErrText);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, rtn.ErrText);
                 }
             }
 
@@ -251,7 +256,7 @@ namespace IRAPBase
                 catch (Exception error)
                 {
                     string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -262,12 +267,12 @@ namespace IRAPBase
 
                 #region 获取 nameID
                 string sequenceName = "NextNameID";
-                SequenceValueDTO rtnSequence = 
+                SequenceValueDTO rtnSequence =
                     IRAPSequence.GetSequence(sequenceName, 1);
                 if (rtnSequence.ErrCode != 0)
                 {
                     string msg = rtnSequence.ErrText;
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -297,7 +302,7 @@ namespace IRAPBase
                 catch (Exception error)
                 {
                     string msg = $"保存名称的时候发生错误：{error.Message}";
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -330,7 +335,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -375,7 +380,7 @@ namespace IRAPBase
                 {
                     string msg = $"更新内容时发生错误: {error.Message}";
 
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -388,7 +393,7 @@ namespace IRAPBase
             {
                 string msg = $"传入的参数不是 SysNameSpaceEntity 对象";
 
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -432,7 +437,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -477,7 +482,7 @@ namespace IRAPBase
                 {
                     string msg = $"删除名称时发生错误: {error.Message}";
 
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -490,7 +495,7 @@ namespace IRAPBase
             {
                 string msg = $"传入的参数不是 SysNameSpaceEntity 对象";
 
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -518,7 +523,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return null;
             }
 
@@ -548,7 +553,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[SysNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                 return null;
             }
 
@@ -563,6 +568,9 @@ namespace IRAPBase
         }
     }
 
+    /// <summary>
+    /// IRAPMDM数据库中的004表名称集合类
+    /// </summary>
     internal class IRAPBizNamespaceSet : IIRAPNamespaceSet
     {
         public IRAPBizNamespaceSet() { }
@@ -607,7 +615,8 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                Console.WriteLine(
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(
+                    LogType.ERROR,
                     $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}");
                 return 0;
             }
@@ -633,7 +642,8 @@ namespace IRAPBase
             }
             catch (Exception error)
             {
-                Console.WriteLine(
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(
+                    LogType.ERROR,
                     $"查找名称标识时发生错误：{error.Message}");
                 return 0;
             }
@@ -654,11 +664,11 @@ namespace IRAPBase
             int nameID = FindNameID(communityID, nameDescription, languageID);
             if (nameID == 0)
             {
-                IRAPError rtn = 
+                IRAPError rtn =
                     Add(
-                        communityID, 
-                        nameDescription, 
-                        languageID, 
+                        communityID,
+                        nameDescription,
+                        languageID,
                         out nameID);
                 if (rtn.ErrCode == 0)
                 {
@@ -707,7 +717,7 @@ namespace IRAPBase
                 catch (Exception error)
                 {
                     string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -718,12 +728,12 @@ namespace IRAPBase
 
                 #region 获取 nameID
                 string sequenceName = "NextNameID";
-                SequenceValueDTO rtnSequence = 
+                SequenceValueDTO rtnSequence =
                     IRAPSequence.GetSequence(sequenceName, 1);
                 if (rtnSequence.ErrCode != 0)
                 {
                     string msg = rtnSequence.ErrText;
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -753,7 +763,7 @@ namespace IRAPBase
                 catch (Exception error)
                 {
                     string msg = $"保存名称的时候发生错误：{error.Message}";
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -781,7 +791,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -826,7 +836,7 @@ namespace IRAPBase
                 {
                     string msg = $"更新内容时发生错误: {error.Message}";
 
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -839,7 +849,7 @@ namespace IRAPBase
             {
                 string msg = $"传入的参数不是 BizNameSpaceEntity 对象";
 
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -871,7 +881,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -916,7 +926,7 @@ namespace IRAPBase
                 {
                     string msg = $"删除名称时发生错误: {error.Message}";
 
-                    Console.WriteLine(msg);
+                    Log.Instance.WriteMsg<IRAPSysNamespaceSet>(LogType.ERROR, msg);
                     return
                         new IRAPError()
                         {
@@ -929,7 +939,7 @@ namespace IRAPBase
             {
                 string msg = $"传入的参数不是 BizNameSpaceEntity 对象";
 
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return
                     new IRAPError()
                     {
@@ -950,7 +960,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return null;
             }
 
@@ -974,7 +984,7 @@ namespace IRAPBase
             catch (Exception error)
             {
                 string msg = $"获取[BizNameSpaceEntity]资源库的时候发生错误: {error.Message}";
-                Console.WriteLine(msg);
+                Log.Instance.WriteMsg<IRAPBizNamespaceSet>(LogType.ERROR, msg);
                 return null;
             }
 
