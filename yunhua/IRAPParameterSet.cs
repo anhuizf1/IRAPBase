@@ -57,11 +57,13 @@ namespace IRAPBase
                 loginInfo = loginSet.GetLogin(communityID, sysLogID);
                 if (loginInfo == null)
                 {
-                    loginInfo = new LoginEntity()
-                    {
-                        UserCode = "Unknown",
-                        LanguageID = 30,
-                    };
+                    rlt.ErrCode = 9998;
+                    rlt.ErrText = $"[{communityID}]社区没有[{sysLogID}]登录标识";
+                }
+                else
+                {
+                    rlt.ErrCode = 0;
+                    rlt.ErrText = "得到登录用户信息";
                 }
             }
             catch (Exception error)
@@ -90,20 +92,23 @@ namespace IRAPBase
         /// <summary>
         /// 获取 IRAP 全局参数表
         /// </summary>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>系统参数实体对象集合</returns>
-        public List<IRAPParameterDTO> GetGlobal(long sysLogID)
+        public List<IRAPParameterDTO> GetGlobal(int communityID, long sysLogID)
         {
-            return GetByCommunityID(0, sysLogID);
+            return GetByCommunityID(0, communityID, sysLogID);
         }
 
         /// <summary>
         /// 获取社区相关的参数表
         /// </summary>
-        /// <param name="communityID">社区标识</param>
+        /// <param name="communityIDByParam">参数所属的社区号</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>系统参数实体对象集合</returns>
         public List<IRAPParameterDTO> GetByCommunityID(
+            int communityIDByParam,
             int communityID,
             long sysLogID)
         {
@@ -143,13 +148,15 @@ namespace IRAPBase
         /// <summary>
         /// 获取指定参数 ID 列表的参数表
         /// </summary>
+        /// <param name="communityIDByParam">参数所属的社区号</param>
         /// <param name="communityID">社区标识</param>
         /// <param name="ids">参数 ID 列表</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>系统参数实体对象集合</returns>
         public List<IRAPParameterDTO> GetByParamID(
-            int communityID,
+            int communityIDByParam,
             int[] ids,
+            int communityID,
             long sysLogID)
         {
             IRAPError rlt =
@@ -162,7 +169,7 @@ namespace IRAPBase
                         .Table
                         .Where(
                             p => ids.Contains(p.ParameterID) &&
-                            p.PartitioningKey == communityID * 10000)
+                            p.PartitioningKey == communityIDByParam * 10000)
                  join l in
                     names
                         .Table
@@ -190,13 +197,15 @@ namespace IRAPBase
         /// 获取指定参数 ID 列表的全局参数表
         /// </summary>
         /// <param name="ids">参数 ID 列表</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>系统参数实体对象集合</returns>
         public List<IRAPParameterDTO> GetByParamID(
             int[] ids,
+            int communityID,
             long sysLogID)
         {
-            return GetByParamID(0, ids, sysLogID);
+            return GetByParamID(0, ids, communityID, sysLogID);
         }
 
         /// <summary>
@@ -256,7 +265,7 @@ namespace IRAPBase
             }
 
             List<IRAPParameterDTO> lists =
-                GetByParamID(communityID, new int[] { paramID }, sysLogID);
+                GetByParamID(communityID, new int[] { paramID }, communityID, sysLogID);
             if (lists.Count > 0)
             {
                 rlt.ErrCode = 9999;
@@ -269,7 +278,8 @@ namespace IRAPBase
                 return rlt;
             }
 
-            lists = GetByParamID(0, new int[] { paramID }, sysLogID);
+            // 在全局参数集中查找
+            lists = GetByParamID(new int[] { paramID }, communityID, sysLogID);
             if (lists.Count <= 0)
             {
                 rlt.ErrCode = 9999;
@@ -374,7 +384,7 @@ namespace IRAPBase
             #endregion
 
             List<IRAPParameterDTO> iParams =
-                GetByParamID(communityID, new int[] { paramID }, sysLogID);
+                GetByParamID(communityID, new int[] { paramID }, communityID, sysLogID);
             if (iParams.Count <= 0)
             {
                 rlt.ErrCode = 9999;
@@ -426,22 +436,24 @@ namespace IRAPBase
         /// <summary>
         /// 更新参数值
         /// </summary>
-        /// <param name="communityID">社区标识</param>
+        /// <param name="communityIDByParam">参数所在社区标识</param>
         /// <param name="paramID">参数标识</param>
         /// <param name="paramStrValue">参数值（字符串）</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         public IRAPError Modify(
-            int communityID,
+            int communityIDByParam,
             byte paramID,
             string paramStrValue,
+            int communityID,
             long sysLogID)
         {
             IRAPError rlt = new IRAPError();
 
             rlt =
                 GetUserInfoWithSysLogID(
-                    communityID,
+                    communityIDByParam,
                     sysLogID,
                     out LoginEntity loginInfo);
             if (rlt.ErrCode != 0)
@@ -450,11 +462,15 @@ namespace IRAPBase
             }
 
             List<IRAPParameterDTO> iParams =
-                GetByParamID(communityID, new int[] { paramID }, sysLogID);
+                GetByParamID(
+                    communityIDByParam, 
+                    new int[] { paramID },
+                    communityID,
+                    sysLogID);
             if (iParams.Count <= 0)
             {
                 rlt.ErrCode = 9999;
-                rlt.ErrText = $"[{communityID}]社区中未找到ParameterID=[{paramID}]的参数";
+                rlt.ErrText = $"[{communityIDByParam}]社区中未找到ParameterID=[{paramID}]的参数";
                 Log.Instance.WriteMsg<IRAPParameterSet>(
                     LogType.ERROR,
                     $"[({rlt.ErrCode}){rlt.ErrText}]");
@@ -503,20 +519,22 @@ namespace IRAPBase
         /// 更新参数值
         /// </summary>
         /// <remarks>本方法用于同时更新参数整型值和字符串值</remarks>
-        /// <param name="communityID">社区标识</param>
+        /// <param name="communityIDByParam">参数的社区标识</param>
         /// <param name="param">参数DTO对象</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         public IRAPError Modify(
-            int communityID,
+            int communityIDByParam,
             IRAPParameterDTO param,
+            int communityID,
             long sysLogID)
         {
             IRAPError rlt = new IRAPError();
 
             rlt =
                 GetUserInfoWithSysLogID(
-                    communityID,
+                    communityIDByParam,
                     sysLogID,
                     out LoginEntity loginInfo);
             if (rlt.ErrCode != 0)
@@ -525,12 +543,16 @@ namespace IRAPBase
             }
 
             List<IRAPParameterDTO> iParams =
-                GetByParamID(communityID, new int[] { param.ParameterID }, sysLogID);
+                GetByParamID(
+                    communityIDByParam, 
+                    new int[] { param.ParameterID },
+                    communityID,
+                    sysLogID);
             if (iParams.Count <= 0)
             {
                 rlt.ErrCode = 9999;
                 rlt.ErrText =
-                    $"[{communityID}]社区中未找到ParameterID=[{param.ParameterID}]的参数";
+                    $"[{communityIDByParam}]社区中未找到ParameterID=[{param.ParameterID}]的参数";
                 Log.Instance.WriteMsg<IRAPParameterSet>(
                     LogType.ERROR,
                     $"[({rlt.ErrCode}){rlt.ErrText}]");
@@ -580,18 +602,20 @@ namespace IRAPBase
         /// 删除一个指定的系统参数
         /// </summary>
         /// <remarks>只能删除社区相关的参数，不能删除全局参数</remarks>
-        /// <param name="communityID">社区标识</param>
+        /// <param name="communityIDByParam">社区标识</param>
         /// <param name="param">参数对象</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         public IRAPError Delete(
-            int communityID,
+            int communityIDByParam,
             IRAPParameterDTO param,
+            int communityID,
             long sysLogID)
         {
             IRAPError rlt = new IRAPError();
 
-            if (communityID == 0)
+            if (communityIDByParam == 0)
             {
                 rlt.ErrCode = 9999;
                 rlt.ErrText = $"不能删除社区标识未[0]的参数";
@@ -603,7 +627,7 @@ namespace IRAPBase
 
             rlt =
                 GetUserInfoWithSysLogID(
-                    communityID,
+                    communityIDByParam,
                     sysLogID,
                     out LoginEntity loginInfo);
             if (rlt.ErrCode != 0)
@@ -612,12 +636,16 @@ namespace IRAPBase
             }
 
             List<IRAPParameterDTO> iParams =
-                GetByParamID(communityID, new int[] { param.ParameterID }, sysLogID);
+                GetByParamID(
+                    communityIDByParam,
+                    new int[] { param.ParameterID }, 
+                    communityID,
+                    sysLogID);
             if (iParams.Count <= 0)
             {
                 rlt.ErrCode = 9999;
                 rlt.ErrText =
-                    $"[{communityID}]社区中未找到ParameterID=[{param.ParameterID}]的参数";
+                    $"[{communityIDByParam}]社区中未找到ParameterID=[{param.ParameterID}]的参数";
                 Log.Instance.WriteMsg<IRAPParameterSet>(
                     LogType.ERROR,
                     $"[({rlt.ErrCode}){rlt.ErrText}]");
@@ -667,18 +695,20 @@ namespace IRAPBase
         /// 删除一个指定的系统参数
         /// </summary>
         /// <remarks>只能删除社区相关的参数，不能删除全局参数</remarks>
-        /// <param name="communityID">社区标识</param>
+        /// <param name="communityIDByParam">社区标识</param>
         /// <param name="paramID">参数标识</param>
+        /// <param name="communityID">登录的社区标识</param>
         /// <param name="sysLogID">系统登录标识</param>
         /// <returns>IRAP系统通用错误对象，如果其中的ErrCode：0-执行成功；非0执行失败</returns>
         public IRAPError Delete(
-            int communityID,
+            int communityIDByParam,
             byte paramID,
+            int communityID,
             long sysLogID)
         {
             IRAPError rlt = new IRAPError();
 
-            if (communityID == 0)
+            if (communityIDByParam == 0)
             {
                 rlt.ErrCode = 9999;
                 rlt.ErrText = $"不能删除社区标识未[0]的参数";
@@ -690,7 +720,7 @@ namespace IRAPBase
 
             rlt =
                 GetUserInfoWithSysLogID(
-                    communityID,
+                    communityIDByParam,
                     sysLogID,
                     out LoginEntity loginInfo);
             if (rlt.ErrCode != 0)
@@ -699,12 +729,16 @@ namespace IRAPBase
             }
 
             List<IRAPParameterDTO> iParams =
-                GetByParamID(communityID, new int[] { paramID }, sysLogID);
+                GetByParamID(
+                    communityIDByParam, 
+                    new int[] { paramID }, 
+                    communityID,
+                    sysLogID);
             if (iParams.Count <= 0)
             {
                 rlt.ErrCode = 9999;
                 rlt.ErrText =
-                    $"[{communityID}]社区中未找到ParameterID=[{paramID}]的参数";
+                    $"[{communityIDByParam}]社区中未找到ParameterID=[{paramID}]的参数";
                 Log.Instance.WriteMsg<IRAPParameterSet>(
                     LogType.ERROR,
                     $"[({rlt.ErrCode}){rlt.ErrText}]");
