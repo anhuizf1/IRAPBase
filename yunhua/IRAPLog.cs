@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace IRAPBase
 {
+    
     public class IRAPLog
     {
         private IQueryable<LoginEntity> _loginLog = null;
@@ -50,6 +51,11 @@ namespace IRAPBase
             }
             
         }
+        /// <summary>
+        /// sssss
+        /// </summary>
+        /// <param name="access_token"></param>
+        /// <returns></returns>
         public int GetCommunityID (string access_token)
         {
             LoginEntity e = GetLogIDByToken(access_token);
