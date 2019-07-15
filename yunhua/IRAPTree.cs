@@ -9,6 +9,7 @@ using System.Data.Entity;
 using IRAPBase.Serialize;
 using System.Data.SqlClient;
 using System.Reflection;
+using IRAPBase.Enums;
 
 namespace IRAPBase
 {
@@ -618,7 +619,7 @@ namespace IRAPBase
             {
                 TreeViewDTO item = new TreeViewDTO()
                 {
-                    Accessibility = 1,
+                    Accessibility = AccessibilityType.Radio,
                     AlternateCode = r.Code,
                     CSTRoot = r.CSTRoot,
                     NodeCode = r.Code,
@@ -638,7 +639,7 @@ namespace IRAPBase
                 {
                     TreeViewDTO dto = new TreeViewDTO()
                     {
-                        Accessibility = 1,
+                        Accessibility = AccessibilityType.Radio,
                         AlternateCode = row.AlternateCode,
                         CSTRoot = row.CSTRoot,
                         NodeCode = row.Code,

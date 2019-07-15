@@ -104,7 +104,9 @@
     <Compile Include="Entities\RowSet_T4R3.cs" />
     <Compile Include="Entities\RowSet_T4R4.cs" />
     <Compile Include="Entities\SystemNodeEntity.cs" />
+    <Compile Include="Enums\AccessibilityType.cs" />
     <Compile Include="Enums\LogEnumType.cs" />
+    <Compile Include="Enums\SelectStatusType.cs" />
     <Compile Include="Extend.cs" />
     <Compile Include="IRAPAssembly.cs" />
     <Compile Include="IRAPBizModel.cs" />
