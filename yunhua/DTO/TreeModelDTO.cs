@@ -14,7 +14,7 @@ namespace IRAPBase.DTO
         /// <summary>
         /// 树标识
         /// </summary>
-        public Int16 TreeID { get; set; }
+        public short TreeID { get; set; }
         /// <summary>
         /// 树名称
         /// </summary>
