@@ -36,7 +36,7 @@ namespace IRAPBase.Serialize
         /// <returns>json数据格式</returns>
         public static string ToJson(this string[] strs)
         {
-            return ToJson2((object)strs);
+            return ToJson2(strs);
         }
 
         /// <summary>
