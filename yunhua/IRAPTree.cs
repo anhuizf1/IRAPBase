@@ -500,19 +500,19 @@ namespace IRAPBase
             if (_treeID <= 100)
             {
                 _nodes = new Repository<ETreeSysDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-                _leaves = new Repository<ETreeSysLeaf>(_db).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                _leaves = new Repository<ETreeSysLeaf>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
             }
             else if (_treeID>100 && _treeID <= 1000)
             {
                 _nodes = new Repository<ETreeBizDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 //  _leaves = new Repository<ETreeBizLeaf>(_db).Table;
-                _leaves = _db.Set<ETreeBizLeaf>().Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                _leaves = _db.Set<ETreeBizLeaf>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
             }
             else
             {
                 _nodes = new Repository<ETreeBizDir>(_db).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 //  _leaves = new Repository<ETreeBizLeaf>(_db).Table;
-                _leaves = _db.Set<ETreeRichLeaf>().Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                _leaves = _db.Set<ETreeRichLeaf>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
             }
             //加载树模型
             _treeModel = new IRAPTreeModel(_treeID);
@@ -528,19 +528,19 @@ namespace IRAPBase
                 if (_treeID <= 100)
                 {
                     //加载分类属性
-                    _treeClass = _db.Set<ETreeSysClass>().Where(c => c.PartitioningKey == PK && c.LeafID == _leafID).OrderBy(c => c.Ordinal);
+                    _treeClass = _db.Set<ETreeSysClass>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.LeafID == _leafID).OrderBy(c => c.Ordinal);
                     //加载瞬态属性
-                    _treeTrans = _db.Set<ETreeSysTran>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
+                    _treeTrans = _db.Set<ETreeSysTran>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
                     //加载状态属性
-                    _treeStatus = _db.Set<ETreeSysStatus>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
+                    _treeStatus = _db.Set<ETreeSysStatus>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
                 }
                 else
                 {   //加载分类属性
-                    _treeClass = _db.Set<ETreeBizClass>().Where(c => c.PartitioningKey == PK && c.LeafID == _leafID).OrderBy(c => c.Ordinal);
+                    _treeClass = _db.Set<ETreeBizClass>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.LeafID == _leafID).OrderBy(c => c.Ordinal);
                     //加载瞬态属性
-                    _treeTrans = _db.Set<ETreeBizTran>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
+                    _treeTrans = _db.Set<ETreeBizTran>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
                     //加载状态属性
-                    _treeStatus = _db.Set<ETreeBizStatus>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
+                    _treeStatus = _db.Set<ETreeBizStatus>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID).OrderBy(c => c.Ordinal);
                 }
             }
         }
@@ -590,7 +590,7 @@ namespace IRAPBase
         public BaseGenAttrEntity GetGenAttr<T>() where T : BaseGenAttrEntity
         {
             //未来是否根据模型 创建一个子类型返回？
-            var obj = _db.Set<T>().FirstOrDefault(c => c.PartitioningKey == PK && c.EntityID == _entityID);
+            var obj = _db.Set<T>().FirstOrDefault(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID);
             if (obj == null)
             {
                 throw new Exception("一般属性没有找到记录！");
@@ -605,7 +605,7 @@ namespace IRAPBase
         /// <returns>通用错误IRAPError</returns>
         public IQueryable<BaseRowAttrEntity> GetRSAttr<T>() where T : BaseRowAttrEntity
         {
-            return _db.Set<T>().Where(c => c.PartitioningKey == PK && c.EntityID == _entityID).AsNoTracking().OrderBy(c => c.Ordinal);
+            return _db.Set<T>().Where(c => _PKDict.Contains(c.PartitioningKey) && c.EntityID == _entityID).AsNoTracking().OrderBy(c => c.Ordinal);
         }
         /// <summary>
         /// 根据节点和叶子生成TreeView数据
@@ -1465,6 +1465,7 @@ namespace IRAPBase
             else
             {
                 db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+                
             }
 
             IRAPTreeBase treeBase = new IRAPTreeBase(db, _communityID, treeID, leafID);

@@ -29,11 +29,7 @@ namespace TestConsole
 
             var db= DBContextFactory.Instance.CreateContext("IRAPContext");
 
-            IRAPParameterEntity p = new IRAPParameterEntity() { PartitioningKey=0,  ParameterID=1  
-                ,ParameterNameID=1,ParameterValue=12 ,ParameterValueStr="test", TimeUpdated=DateTime.Now, UpdatedBy="admin"};
-            //db.Set<IRAPParameterEntity>().Attach(p);
-            db.Entry(p).State = System.Data.Entity.EntityState.Modified;
-            db.SaveChanges();
+           
             // var list= db.Set<ETreeBizClass>().Where(c => c.LeafID == 2361480).ToList();
 
             //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
