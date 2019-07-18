@@ -112,6 +112,9 @@
     <Compile Include="Enums\AccessibilityType.cs" />
     <Compile Include="Enums\LogEnumType.cs" />
     <Compile Include="Enums\SelectStatusType.cs" />
+    <Compile Include="Exceptions\ExCodeNotCompliantException.cs" />
+    <Compile Include="Exceptions\PrefixNotCompliantException.cs" />
+    <Compile Include="Exceptions\PrefixNotFoundException.cs" />
     <Compile Include="Extend.cs" />
     <Compile Include="IRAPAssembly.cs" />
     <Compile Include="IRAPBizModel.cs" />

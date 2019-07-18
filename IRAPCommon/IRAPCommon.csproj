@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extentions\StringExtension.cs" />
     <Compile Include="GetMachineInfo.cs" />
     <Compile Include="Des3Util.cs" />
     <Compile Include="hardware.cs" />
@@ -51,6 +52,7 @@
     <Compile Include="IRAPMath.cs" />
     <Compile Include="IRAPSHA.cs" />
     <Compile Include="IRAPStringParser.cs" />
+    <Compile Include="RequestResult.cs" />
     <Compile Include="URLEncode.cs" />
     <Compile Include="ZipUtil.cs" />
     <Compile Include="IRAPAES.cs" />
