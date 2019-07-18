@@ -117,7 +117,7 @@ namespace IRAPBase
             if (_treeID <= 100)
             {
                 nodes = new Repository<ETreeSysDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
-                leaves = new Repository<ETreeSysLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                leaves = new Repository<ETreeSysLeaf>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 //加载分类属性
                 _treeClass = context.Set<ETreeSysClass>().Where(c => c.PartitioningKey == PK);
                 //加载瞬态属性
@@ -131,11 +131,11 @@ namespace IRAPBase
             {
                 if (_treeID > 100 && _treeID <= 1000)
                 {
-                    leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                    leaves = new Repository<ETreeBizLeaf>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 }
                 else
                 {
-                    leaves = new Repository<ETreeRichLeaf>(context).Table.Where(c => c.PartitioningKey == PK && c.TreeID == _treeID);
+                    leaves = new Repository<ETreeRichLeaf>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
                 }
                 nodes = new Repository<ETreeBizDir>(context).Table.Where(c => _PKDict.Contains(c.PartitioningKey) && c.TreeID == _treeID);
 
