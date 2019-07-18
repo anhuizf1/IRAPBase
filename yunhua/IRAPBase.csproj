@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DTO\BizModelDTO.cs" />
+    <Compile Include="DTO\IRAPCommunityDTO.cs" />
     <Compile Include="DTO\SaveAttrDTO.cs" />
     <Compile Include="DTO\TreeModelDTO.cs" />
     <Compile Include="Entities\BaseAuxFact.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="IRAPAssembly.cs" />
     <Compile Include="IRAPBizModel.cs" />
     <Compile Include="IRAPBizModelSet.cs" />
+    <Compile Include="IRAPCommunitySet.cs" />
     <Compile Include="IRAPErrorSet.cs" />
     <Compile Include="IRAPTreeModel.cs" />
     <Compile Include="ITreeBase-del.cs" />
