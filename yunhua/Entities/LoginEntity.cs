@@ -7,12 +7,27 @@ using System.Threading.Tasks;
 
 namespace IRAPBase.Entities
 {
+    /// <summary>
+    /// 对应表 stb009
+    /// </summary>
     public class LoginEntity : BaseEntity
     {
+        /// <summary>
+        /// 分区标识(社区标识*10000)
+        /// </summary>
         public long PartitioningKey { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]//不自动增长
+        /// <summary>
+        /// 登录标识(不自动增长)
+        /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int SysLogID { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string Access_Token { get; set; }
+        /// <summary>
+        /// 渠道标识(网关 stb_Channels中的ClientID)
+        /// </summary>
         public string ClientID { get; set; }
         public byte LoginMode { get; set; }
         public string UserCode { get; set; }

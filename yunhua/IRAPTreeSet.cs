@@ -10,6 +10,7 @@ using IRAPBase.DTO;
 using System.Reflection;
 using IRAPBase.Serialize;
 using System.Data.SqlClient;
+using IRAPBase.Enums;
 
 namespace IRAPBase
 {
@@ -440,7 +441,7 @@ namespace IRAPBase
             {
                 if (grantList.Any(c => c.CSTRoot == rootNode.CSTRoot))
                 {
-                    rootNode.Accessibility = 1;
+                    rootNode.Accessibility = AccessibilityType.Radio ;
                     accessibleNodes.Add(rootNode);
                 }
             }
@@ -454,7 +455,7 @@ namespace IRAPBase
                 return;
             }
             bool subAccessible = false;
-            if (rootNode.Accessibility == 1)
+            if (rootNode.Accessibility ==  AccessibilityType.Radio)
             {
                 subAccessible = true;
                 accessibleNodes.Add(rootNode);
@@ -463,17 +464,17 @@ namespace IRAPBase
             {
                 if (subAccessible)
                 {
-                    r.Accessibility = 1;
+                    r.Accessibility =  AccessibilityType.Radio;
                 }
                 else
                 {
                     if (grantList.Any(c => c.CSTRoot == r.CSTRoot))
                     {
-                        r.Accessibility = 1;
+                        r.Accessibility =  AccessibilityType.Radio;
                     }
                 }
                 DownTree(r, grantList);
-                if (r.Accessibility == 1)
+                if (r.Accessibility ==  AccessibilityType.Radio)
                 {
                     accessibleNodes.Add(r);
                 }
@@ -497,7 +498,7 @@ namespace IRAPBase
             //    Console.WriteLine("节点{0}无权访问已删除！", ei.NodeID);
             //}
             list.RemoveAll(s => s.Accessibility == 0);
-            var q2 = from c in list where c.Accessibility == 1 select c;
+            var q2 = from c in list where c.Accessibility ==  AccessibilityType.Radio select c;
             foreach (var ei in q2)
             {
                 RemoveNoAccessible(ei);
@@ -510,9 +511,9 @@ namespace IRAPBase
             {
                 return;
             }
-            if (fatherNode.Accessibility != 1)
+            if (fatherNode.Accessibility !=  AccessibilityType.Radio)
             {
-                fatherNode.Accessibility = 1;
+                fatherNode.Accessibility =  AccessibilityType.Radio;
             }
             UpTree(fatherNode.FatherNode);
         }
@@ -540,7 +541,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = 1;
+                node.Accessibility =  AccessibilityType.Radio;
                 node.AlternateCode = "";
                 root.Children.Add(node);
 
@@ -575,7 +576,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = 1;
+                node.Accessibility =  AccessibilityType.Radio;
                 node.AlternateCode = r.AlternateCode;
                 root.Children.Add(node);
             }
@@ -1444,11 +1445,11 @@ namespace IRAPBase
         /// <summary>
         /// 可访问性  0=不可选  1=可单选  2=可复选
         /// </summary>
-        public byte Accessibility { get; set; }
+        public AccessibilityType Accessibility { get; set; }
         /// <summary>
         /// 选中状态  0=未选中  1=已选中
         /// </summary>
-        public byte SelectStatus { get; set; }       // 
+        public SelectStatusType SelectStatus { get; set; }       // 
         /// <summary>
         /// 第一检索码
         /// </summary>

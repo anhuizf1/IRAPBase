@@ -20,7 +20,7 @@ namespace IRAPBase
     //基本树
 
     //禁止代码迁移
- 
+
     //public class MyConfiguration : DbMigrationsConfiguration<IRAPDBContext>
     //{
     //    public MyConfiguration()
@@ -29,7 +29,7 @@ namespace IRAPBase
     //    }
     //}
     [DbConfigurationType(typeof(MySqlEFConfiguration))]
-    public class IRAPMyDBContext : DbContext,IDbContext
+    public class IRAPMyDBContext : DbContext, IDbContext
     {
         public bool AutoDetectChangesEnabled
         {
@@ -93,21 +93,33 @@ namespace IRAPBase
             //modelBuilder.Entity<TreeBase>().HasKey(k => k.LeafID);
             // modelBuilder.Entity<ModelTreeClassfiy>();
             base.OnModelCreating(modelBuilder);
- 
+
         }
-       
-       //注册实体类
+
+        /// <summary>
+        /// 注册实体类
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
         public new IDbSet<TEntity> Set<TEntity>() where TEntity : BaseEntity
         {
             return base.Set<TEntity>();
         }
-
+        /// <summary>
+        /// 跟踪所有属性列
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public new DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : BaseEntity
         {
             return base.Entry(entity);
         }
 
-       public DbSet GetSet(Type t)
+      
+
+
+        public DbSet GetSet(Type t)
         {
             return Set(t);
         }
@@ -115,7 +127,7 @@ namespace IRAPBase
         public override int SaveChanges()
         {
             return SaveChanges();
-            
+
         }
 
         public void RollBack()
@@ -128,7 +140,7 @@ namespace IRAPBase
         }
     }
 
-     
+
 
 
 }

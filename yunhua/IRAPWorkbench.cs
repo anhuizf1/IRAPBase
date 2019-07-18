@@ -21,8 +21,6 @@ namespace IRAPBase
     /// </summary>
     public class IRAPWorkbench: MarshalByRefObject
     {
-        private IDbContext _db = null;
-        private int _communityID = 0;
         private int _treeID = 0;
         private int _leafID = 0;
         //private string _dbName = "";
@@ -30,11 +28,11 @@ namespace IRAPBase
         /// <summary>
         /// 当前社区
         /// </summary>
-        public int CommunityID { get { return _communityID; } set { _communityID = value; } }
+        public int CommunityID { get; set; } = 0;
         /// <summary>
         /// //当前数据库连接上下文
         /// </summary>
-        public IDbContext DB { get { return _db; } }
+        public IDbContext DB { get; private set; } = null;
 
         /// <summary>
         /// 使用动态类型返回结果
@@ -51,7 +49,7 @@ namespace IRAPBase
         /// </summary>
         public IRAPWorkbench()
         {
-            _db = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
+            DB = DBContextFactory.Instance.CreateContext("IRAPMDMContext");
         }
 
         /// <summary>
@@ -77,19 +75,19 @@ namespace IRAPBase
             // {
             //     _communityID = communityID;
             // }
-            if (_db.DataBase.Connection.Database == dbName)
+            if (DB.DataBase.Connection.Database == dbName)
             {
-                return _db;
+                return DB;
             }
             else
             {
-                if (_db.DataBase.CurrentTransaction != null)
+                if (DB.DataBase.CurrentTransaction != null)
                 {
-                    _db.DataBase.CurrentTransaction.Rollback();
+                    DB.DataBase.CurrentTransaction.Rollback();
                 }
-                _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
+                DB = DBContextFactory.Instance.CreateContext(dbName + "Context");
             }
-            return _db;
+            return DB;
         }
 
         /// <summary>
@@ -100,23 +98,23 @@ namespace IRAPBase
         /// <returns></returns>
         public IDbContext UsingContext(string dbName, int communityID)
         {
-            if (_communityID > 0)
+            if (CommunityID > 0)
             {
-                _communityID = communityID;
+                CommunityID = communityID;
             }
-            if (_db.DataBase.Connection.Database == dbName)
+            if (DB.DataBase.Connection.Database == dbName)
             {
-                return _db;
+                return DB;
             }
             else
             {
-                if (_db.DataBase.CurrentTransaction != null)
+                if (DB.DataBase.CurrentTransaction != null)
                 {
-                    _db.DataBase.CurrentTransaction.Rollback();
+                    DB.DataBase.CurrentTransaction.Rollback();
                 }
-                _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
+                DB = DBContextFactory.Instance.CreateContext(dbName + "Context");
             }
-            return _db;
+            return DB;
         }
 
         /// <summary>
@@ -138,10 +136,10 @@ namespace IRAPBase
 
         public IRAPTreeBase GetIRAPTreeBase(int communityID, int treeID, int leafID)
         {
-            _communityID = communityID;
+            CommunityID = communityID;
             _treeID = treeID;
             _leafID = leafID;
-            _irapTreeBase = new IRAPTreeBase(_db, _communityID, _treeID, _leafID);
+            _irapTreeBase = new IRAPTreeBase(DB, CommunityID, _treeID, _leafID);
             return _irapTreeBase;
         }
 
@@ -154,11 +152,11 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPTreeBase GetIRAPTreeBase(int treeID, int leafID)
         {
-            if (_communityID == 0)
+            if (CommunityID == 0)
             { throw new Exception("在调用GetIRAPTreeBase时未指定社区。"); }
             _treeID = treeID;
             _leafID = leafID;
-            _irapTreeBase = new IRAPTreeBase(_db, _communityID, _treeID, _leafID);
+            _irapTreeBase = new IRAPTreeBase(DB, CommunityID, _treeID, _leafID);
             return _irapTreeBase;
         }
 
@@ -170,8 +168,8 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPTreeSet GetIRAPTreeSet(int communityID, int treeID)
         {
-            _communityID = communityID;
-            return new IRAPTreeSet(_db, communityID, treeID);
+            CommunityID = communityID;
+            return new IRAPTreeSet(DB, communityID, treeID);
         }
         /// <summary>
         /// 获取IRAPTreeSet对象 
@@ -180,9 +178,9 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPTreeSet GetIRAPTreeSet(int treeID)
         {
-            if (_communityID == 0)
+            if (CommunityID == 0)
             { throw new Exception("在调用GetIRAPTreeSet时未指定社区。"); }
-            return new IRAPTreeSet(_db, _communityID, treeID);
+            return new IRAPTreeSet(DB, CommunityID, treeID);
         }
         /// <summary>
         /// 业务操作类：申请交易号，保存事实，查询事实等
@@ -192,7 +190,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPOperBase GetIRAPOperBase(string access_token, int opID)
         {
-            return new IRAPOperBase(_db, access_token, opID);
+            return new IRAPOperBase(DB, access_token, opID);
         }
 
         #region//序列化相关
@@ -355,7 +353,7 @@ namespace IRAPBase
         /// <returns></returns>
         public Repository<T> GetRepository<T>() where T : BaseEntity
         {
-            return new Repository<T>(_db);
+            return new Repository<T>(DB);
 
         }
 
@@ -366,7 +364,7 @@ namespace IRAPBase
         /// <returns>数据库实体集合</returns>
         public IDbSet<T> GetTableSet<T>() where T : BaseEntity
         {
-            return _db.Set<T>();
+            return DB.Set<T>();
         }
         /// <summary>
         /// 执行个性化sql
@@ -377,7 +375,7 @@ namespace IRAPBase
         /// <returns></returns>
         public List<T> SqlQuery<T>(string sqlQueryCommand, params object[] parameters)
         {
-            return _db.DataBase.SqlQuery<T>(sqlQueryCommand, parameters).ToList();
+            return DB.DataBase.SqlQuery<T>(sqlQueryCommand, parameters).ToList();
         }
 
         /// <summary>
@@ -389,7 +387,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IEnumerable SqlQuery(Type t, string sqlQueryCommand, params object[] parameters)
         {
-            return _db.DataBase.SqlQuery(t, sqlQueryCommand, parameters);
+            return DB.DataBase.SqlQuery(t, sqlQueryCommand, parameters);
         }
         /// <summary>  
         /// 执行存储过程（语法与数据库相关，尽量少用，否则不能实现跨数据库）
@@ -400,7 +398,7 @@ namespace IRAPBase
         /// <returns>返回参数清单System.Data.SqlClient.SqlParameter []</returns>  
         public Object[] ExecuteSqlNonQuery<T>(string commandText, params Object[] parameters)
         {
-            var results = _db.DataBase.SqlQuery<T>(commandText, parameters);
+            var results = DB.DataBase.SqlQuery<T>(commandText, parameters);
             results.Single();
             return parameters;
         }
@@ -413,7 +411,7 @@ namespace IRAPBase
         /// <returns>影响的行数</returns>
         public int ExecuteSqlCommand(string sqlCommand, params object[] parameters)
         {
-            return _db.DataBase.ExecuteSqlCommand(sqlCommand, parameters);
+            return DB.DataBase.ExecuteSqlCommand(sqlCommand, parameters);
         }
 
         /// <summary>
@@ -423,7 +421,7 @@ namespace IRAPBase
         /// <param name="parameters">参数值，可使用System.Data.SqlClient.SqlParameter类型</param>
         public void ExecuteSqlCommandAsync(string sqlCommand, params object[] parameters)
         {
-            _db.DataBase.ExecuteSqlCommandAsync(sqlCommand, parameters);
+            DB.DataBase.ExecuteSqlCommandAsync(sqlCommand, parameters);
         }
 
         /// <summary>
@@ -436,7 +434,7 @@ namespace IRAPBase
         {
 
             SqlConnection conn = new System.Data.SqlClient.SqlConnection();
-            conn.ConnectionString = _db.DataBase.Connection.ConnectionString;
+            conn.ConnectionString = DB.DataBase.Connection.ConnectionString;
             if (conn.State != ConnectionState.Open)
             {
                 conn.Open();
@@ -463,22 +461,22 @@ namespace IRAPBase
         /// </summary>
         public DbContextTransaction BeginTransaction()
         {
-            if (_db.DataBase.CurrentTransaction != null)
+            if (DB.DataBase.CurrentTransaction != null)
             {
-                _db.DataBase.CurrentTransaction.Rollback();
-                _db.DataBase.CurrentTransaction.Dispose();
+                DB.DataBase.CurrentTransaction.Rollback();
+                DB.DataBase.CurrentTransaction.Dispose();
             }
-            return _db.DataBase.BeginTransaction();
+            return DB.DataBase.BeginTransaction();
         }
         /// <summary>
         /// 对默认数据库连接进行提交
         /// </summary>
         public void SaveChangeAndCommit()
         {
-            _db.SaveChanges();
-            if (_db.DataBase.CurrentTransaction != null)
+            DB.SaveChanges();
+            if (DB.DataBase.CurrentTransaction != null)
             {
-                _db.DataBase.CurrentTransaction.Commit();
+                DB.DataBase.CurrentTransaction.Commit();
             }
         }
     
@@ -488,7 +486,7 @@ namespace IRAPBase
         /// <returns></returns>
         public int SaveChanges()
         {
-            return _db.SaveChanges();
+            return DB.SaveChanges();
         }
 
         #endregion
@@ -518,9 +516,9 @@ namespace IRAPBase
         /// <returns>json字符串，形如：{"ErrCode":9999,"ErrText":"异常错误！"}</returns>
         public string ErrorProcess(Exception err)
         {
-            if (_db.DataBase.CurrentTransaction != null)
+            if (DB.DataBase.CurrentTransaction != null)
             {
-                _db.DataBase.CurrentTransaction.Rollback();
+                DB.DataBase.CurrentTransaction.Rollback();
             }
             BackResult.ErrCode = 9999;
             if (err.InnerException != null)
@@ -541,7 +539,7 @@ namespace IRAPBase
         /// <returns></returns>
         public DateTime DBNow()
         {
-            var now = _db.DataBase.SqlQuery<DateTime?>("select GetDate()").First();
+            var now = DB.DataBase.SqlQuery<DateTime?>("select GetDate()").First();
             if (now == null)
             {
                 now = new DateTime(1900, 1, 1, 0, 0, 0);

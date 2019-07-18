@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IRAPBase.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,27 +17,83 @@ namespace IRAPBase.DTO
 
         public string ErrText { get; set; }
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
     public class TreeViewDTO
     {
-        public int NodeID { get; set; }          //  --结点标识
-        public byte TreeViewType { get; set; }    // --树视图类型
-        public byte NodeType { get; set; }        //  --结点类型
-        public string NodeCode { get; set; }      //   --结点代码
+        /// <summary>
+        /// 结点标识
+        /// </summary>
+        public int NodeID { get; set; }
+        /// <summary>
+        /// 树视图类型
+        /// </summary>
+        public byte TreeViewType { get; set; }
+        /// <summary>
+        /// 结点类型
+        /// </summary>
+        public byte NodeType { get; set; }
+        /// <summary>
+        /// 结点代码
+        /// </summary>
+        public string NodeCode { get; set; }   
+        /// <summary>
+        /// 
+        /// </summary>
         public string AlternateCode { get; set; }
-        public string NodeName { get; set; }       //  --结点名称
-        public int Parent { get; set; }            //  --父结点标识
-        public byte NodeDepth { get; set; }         // --结点深度
-        public int CSTRoot { get; set; }            //--权限控制点
-        public float UDFOrdinal { get; set; }       // --自定义遍历序
-        public byte NodeStatus { get; set; }         // --结点状态
-        public byte Accessibility { get; set; }      // --可访问性  0=不可选  1=可单选  2=可复选
-        public byte SelectStatus { get; set; }       // --选中状态  0=未选中  1=已选中
-        public string SearchCode1 { get; set; }      //--第一检索码
-        public string SearchCode2 { get; set; }      //--第二检索码
-        public string HelpMemoryCode { get; set; }   //--助记码
-        public string IconFile { get; set; }        // --图标文件
-        public byte[] IconImage { get; set; }       // --图标图像
+        /// <summary>
+        /// 结点名称
+        /// </summary>
+        public string NodeName { get; set; }      
+        /// <summary>
+        /// 父结点标识
+        /// </summary>
+        public int Parent { get; set; }           
+        /// <summary>
+        /// 结点深度
+        /// </summary>
+        public byte NodeDepth { get; set; }
+        /// <summary>
+        /// 权限控制点
+        /// </summary>
+        public int CSTRoot { get; set; }
+        /// <summary>
+        /// 自定义遍历序
+        /// </summary>
+        public float UDFOrdinal { get; set; }
+        /// <summary>
+        /// 结点状态
+        /// </summary>
+        public byte NodeStatus { get; set; }
+        /// <summary>
+        /// 可访问性  0=不可选  1=可单选  2=可复选
+        /// </summary>
+        public AccessibilityType Accessibility { get; set; }
+        /// <summary>
+        /// 选中状态  0=未选中  1=已选中
+        /// </summary>
+        public SelectStatusType SelectStatus { get; set; }
+        /// <summary>
+        /// 第一检索码
+        /// </summary>
+        public string SearchCode1 { get; set; }
+        /// <summary>
+        /// 第二检索码
+        /// </summary>
+        public string SearchCode2 { get; set; }
+        /// <summary>
+        /// 助记码
+        /// </summary>
+        public string HelpMemoryCode { get; set; }
+        /// <summary>
+        /// 图标文件
+        /// </summary>
+        public string IconFile { get; set; }
+        /// <summary>
+        /// 图标图像
+        /// </summary>
+        public byte[] IconImage { get; set; }       
     }
 
 

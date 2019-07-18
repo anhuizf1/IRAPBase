@@ -10,9 +10,12 @@ using System.Data.Entity.Core.Objects;
 
 namespace IRAPBase
 {
+
     public interface IDbContext
     {
-
+        /// <summary>
+        /// 
+        /// </summary>
         Database DataBase { get; }
 
         ObjectContext GetObjectContext { get; }
