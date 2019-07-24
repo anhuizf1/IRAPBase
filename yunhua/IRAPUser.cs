@@ -9,6 +9,7 @@ using IRAPBase.DTO;
 using System.Text.RegularExpressions;
 using IRAPCommon;
 using System.Configuration;
+using System.Data;
 //using System.Text;
 
 namespace IRAPBase
@@ -71,13 +72,13 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPError Modify()
         {
-         
+
             if (user == null)
             {
                 return new IRAPError(22, $"用户名{_userCode}无效！");
             }
             _users.Update(user);
-           int resInt=  _users.SaveChanges();
+            int resInt = _users.SaveChanges();
             if (resInt > 0)
             {
                 return new IRAPError(0, "修改成功！");
@@ -244,7 +245,7 @@ namespace IRAPBase
                 }
                 //短信验证码是否有效
                 //申请登录标识
-               
+
                 long sysLogID = IRAPSequence.GetSysLogID();
                 //登录
                 Repository<LoginEntity> loginRep = _unitOfWork.Repository<LoginEntity>();
@@ -329,8 +330,8 @@ namespace IRAPBase
         /// <returns></returns>
         public static byte[] GetBinaryPasswordDES(string passWord)
         {
-          
-            string backRes = IRAPCommon.IRAPDES.EncryptDES(passWord,"chinairapchinairap");
+
+            string backRes = IRAPCommon.IRAPDES.EncryptDES(passWord, "chinairapchinairap");
 
             return Encoding.UTF8.GetBytes(backRes);
             //sfn_GetBinaryOfUserPassword
@@ -342,11 +343,33 @@ namespace IRAPBase
         /// <returns></returns>
         public static byte[] GetBinaryPasswordAES(string passWord)
         {
-            string backRes =  IRAPCommon.IRAPAES.Encrypt(passWord, "chinairap", "chinairap");
+            string backRes = IRAPCommon.IRAPAES.Encrypt(passWord, "chinairap", "chinairap");
             return Encoding.UTF8.GetBytes(backRes);
             //sfn_GetBinaryOfUserPassword
         }
 
+        /// <summary>
+        /// SQLServer专用方法返回密码
+        /// </summary>
+        /// <param name="passWord"></param>
+        /// <returns></returns>
+        public static byte[] GetDBBinaryPassword(string passWord)
+        {
+            var DB = DBContextFactory.Instance.CreateContext("IRAPContext");
+            var pwdlist = DB.DataBase.SqlQuery<byte[]>("select IRAP.dbo.sfn_GetBinaryOfUserPassword(@PlainPWD) as PWD",
+                 new System.Data.SqlClient.SqlParameter("@PlainPWD", passWord));
+           var ojb= pwdlist.FirstOrDefault();
+            if (ojb!=null)
+            {
+                return ojb;
+            }
+            else
+            {
+                return new byte[10];
+            }
+
+            //sfn_GetBinaryOfUserPassword
+        }
         #endregion
 
 

@@ -29,7 +29,10 @@ namespace TestConsole
 
             var db= DBContextFactory.Instance.CreateContext("IRAPContext");
 
-           
+
+            var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
+
+            Console.WriteLine(pwdbyte);
             // var list= db.Set<ETreeBizClass>().Where(c => c.LeafID == 2361480).ToList();
 
             //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
@@ -44,7 +47,7 @@ namespace TestConsole
             //{
             //    Console.WriteLine("{0} {1}", r.TreeID,r.Leaf01);
             //}
-            Console.WriteLine("saved.");
+            Console.WriteLine("ok.");
             Console.ReadKey();
         }
 
