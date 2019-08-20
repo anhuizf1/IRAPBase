@@ -190,8 +190,6 @@
     <Compile Include="mapping\SystemMap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository.cs" />
-    <Compile Include="ServiceDiscovery\RequestHelper.cs" />
-    <Compile Include="ServiceDiscovery\ServiceRPC.cs" />
     <Compile Include="UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DbContexts\" />
+    <Folder Include="ServiceDiscovery\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

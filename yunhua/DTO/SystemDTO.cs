@@ -40,4 +40,27 @@ namespace IRAPBase.DTO
         public string ProgLanuage { get; set; }
   
     }
+
+   /// <summary>
+   /// 使用语言DTO
+   /// </summary>
+    public class LangDTO
+    {
+        /// <summary>
+        /// 语言标识
+        /// </summary>
+        public byte LanguageID { get; set; }
+        /// <summary>
+        /// 语言
+        /// </summary>
+        public string LanuageName { get; set; }
+    }
+
+    public class ZoneDTO {
+
+          public int Zone { get; set; }
+
+        public string ZoneName { get; set; }
+
+    }
 }

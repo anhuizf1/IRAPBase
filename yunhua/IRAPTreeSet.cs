@@ -187,9 +187,9 @@ namespace IRAPBase
         /// 获取树视图（不带权限）
         /// </summary>
         /// <returns></returns>
-        public List<TreeViewDTO> TreeView(int entryNode = 0, bool includeLeaves = true)
+        public List<TreeViewDTO> TreeView(int entryNode = 0, bool includeLeaves = true, bool includeShareData =true )
         {
-            List<TreeViewDTO> resList = GetPlainTreeData(TreeViewData(entryNode, includeLeaves));
+            List<TreeViewDTO> resList = GetPlainTreeData(TreeViewData(entryNode, includeLeaves, includeShareData));
             return resList;
         }
         //动态创建泛型实例举例
@@ -205,12 +205,29 @@ namespace IRAPBase
         /// 返回树的数据，支持懒加载 
         /// </summary>
         /// <returns></returns>
-        private IRAPTreeNodes TreeViewData(int entryNode = 0, bool includingLeaves = true)
+        private IRAPTreeNodes TreeViewData(int entryNode = 0, bool includingLeaves = true, bool includeShareData=true)
         {
             //long[] pkArray = { PK + _treeID, _treeID };
             int errCode = 0;
             string errText = "获取成功！";
-            List<TreeNodeEntity> newNodelist = nodes.Where(r => r.TreeID == _treeID && _PKDict.Contains(r.PartitioningKey)).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
+            List<TreeNodeEntity> newNodelist = null;
+            if (includeShareData)
+            {
+                newNodelist = nodes.Where(r => r.TreeID == _treeID && _PKDict.Contains(r.PartitioningKey)).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
+            }
+            else
+            {
+                newNodelist = nodes.Where(r => r.TreeID == _treeID &&  r.PartitioningKey== PK).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
+            }
+
+            int repeat = newNodelist.GroupBy(g => g.NodeID).Where(s => s.Count() > 1).Count();
+            if (repeat>0)
+            {
+                errCode = 2;
+                errText = $"树标识:{_treeID}发现结点数据重复 请检查！";
+                throw new Exception($"{errCode}-{errText}");
+            }
+
             List<TreeNodeEntity> nodeSet = new List<TreeNodeEntity>();
             if (entryNode > 0)
             {
@@ -218,7 +235,7 @@ namespace IRAPBase
                 if (thisNode == null)
                 {
                     errCode = 2;
-                    errText = "入口结点无效！";
+                    errText = $"入口结点:{entryNode}无效！";
                     throw new Exception($"{errCode}-{errText}");
                 }
                 nodeSet = newNodelist.Where(c => c.NodeDepth > thisNode.NodeDepth).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
@@ -232,13 +249,21 @@ namespace IRAPBase
             List<TreeLeafEntity> leafSet = null;
             if (includingLeaves)
             {
-                leafSet = leaves.Where(r => r.TreeID == _treeID && _PKDict.Contains(r.PartitioningKey)).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
+                if (includeShareData)
+                {
+                    leafSet = leaves.Where(r => r.TreeID == _treeID && _PKDict.Contains(r.PartitioningKey)).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
+                }
+                else
+                {
+                    leafSet = leaves.Where(r => r.TreeID == _treeID && PK==r.PartitioningKey ).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
+                }
             }
 
             TreeNodeEntity node = nodeSet.FirstOrDefault();
             IRAPTreeNodes rootNode = new IRAPTreeNodes();
             if (node != null)
             {
+                rootNode.PartitioningKey = node.PartitioningKey;
                 rootNode.NodeID = node.NodeID;
                 rootNode.NodeCode = node.Code;
                 rootNode.NodeName = node.NodeName;
@@ -338,6 +363,7 @@ namespace IRAPBase
             List<TreeViewDTO> rows = new List<TreeViewDTO>();
             TreeViewDTO item = new TreeViewDTO()
             {
+                PartitioningKey= rootNode.PartitioningKey,
                 Accessibility = rootNode.Accessibility,
                 CSTRoot = rootNode.CSTRoot,
                 HelpMemoryCode = rootNode.HelpMemoryCode,
@@ -374,6 +400,7 @@ namespace IRAPBase
                 {
                     TreeViewDTO item2 = new TreeViewDTO()
                     {
+                        PartitioningKey = c.PartitioningKey,
                         Accessibility = c.Accessibility,
                         CSTRoot = c.CSTRoot,
                         HelpMemoryCode = c.HelpMemoryCode,
@@ -529,6 +556,7 @@ namespace IRAPBase
             {
                 // exists = true;
                 IRAPTreeNodes node = new IRAPTreeNodes();
+                node.PartitioningKey = r.PartitioningKey;
                 node.NodeID = r.NodeID;
                 node.NodeCode = r.Code;
                 node.NodeName = r.NodeName;
@@ -544,7 +572,6 @@ namespace IRAPBase
                 node.Accessibility =  AccessibilityType.Radio;
                 node.AlternateCode = "";
                 root.Children.Add(node);
-
                 FindNodeAddToNode(node, nodeSet, leafSet);
             }
         }
@@ -564,6 +591,7 @@ namespace IRAPBase
             {
                 // exists = true;
                 IRAPTreeNodes node = new IRAPTreeNodes();
+                node.PartitioningKey = r.PartitioningKey;
                 node.NodeID = -r.LeafID;
                 node.NodeCode = r.Code;
                 node.NodeName = r.NodeName;
@@ -1398,6 +1426,11 @@ namespace IRAPBase
     /// </summary>
     public class IRAPTreeNodes
     {
+
+        /// <summary>
+        /// 分区键
+        /// </summary>
+        public long PartitioningKey { get; set; }
         /// <summary>
         /// 结点标识
         /// </summary>

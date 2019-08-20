@@ -110,7 +110,7 @@ namespace IRAPBase
         /// <param name="BackgroundPic">登录背景图片二进制流</param>
         /// <param name="DefaultAppServer">默认服务器</param>
         /// <returns></returns>
-        public IRAPError AddASystem(int SystemID, string ProductNo, string VersionNo, int ProgLangID, int MenuShowCtrl,int MenuStyle,
+        public IRAPError AddASystem(int SystemID, string ProductNo, string VersionNo, int ProgLangID, int MenuShowCtrl, int MenuStyle,
             string Author = "softland", string Coauthor = "", string LogoPicPath = "", byte[] LogoPic = null, string BGPicPath = "", byte[] BackgroundPic = null,
             string DefaultAppServer = "")
         {
@@ -198,6 +198,31 @@ namespace IRAPBase
             list.Add(new ProgLanguageDTO() { ProgLangID = 10, ProgLanuage = "ASP.Net" });
             list.Add(new ProgLanguageDTO() { ProgLangID = 11, ProgLanuage = "Python" });
             list.Add(new ProgLanguageDTO() { ProgLangID = 12, ProgLanuage = "Golang" });
+            return list;
+        }
+
+        public List<LangDTO> GetLanguages()
+        {
+            var list = new List<LangDTO>();
+            list.Add(new LangDTO { LanguageID = 30, LanuageName = "简体中文" });
+            list.Add(new LangDTO { LanguageID = 0, LanuageName = "English" });
+            list.Add(new LangDTO { LanguageID = 28, LanuageName = "繁體中文" });
+            return list;
+        }
+
+        public List<ZoneDTO> GetZones()
+        {
+            var list = new List<ZoneDTO>();
+            list.Add(new ZoneDTO { Zone = 8, ZoneName = "(UTC+08:00) 北京，重庆，香港特别行政区，乌鲁木齐" });
+            list.Add(new ZoneDTO { Zone = 9, ZoneName = "(UTC+09:00) 大阪、札幌、東京" });
+            list.Add(new ZoneDTO { Zone = -5, ZoneName = "(UTC-05:00) 东部时间(美国和加拿大)" });
+            list.Add(new ZoneDTO { Zone = -6, ZoneName = "(UTC-06:00) 中部时间(美国和加拿大)" });
+            list.Add(new ZoneDTO { Zone = -7, ZoneName = "(UTC-07:00) 山地时间(美国和加拿大)" });
+            list.Add(new ZoneDTO { Zone = -8, ZoneName = "(UTC-08:00) 太平洋时间(美国和加拿大)" });
+            list.Add(new ZoneDTO { Zone = -10, ZoneName = "(UTC-10:00) 夏威夷" });
+            list.Add(new ZoneDTO { Zone = -12, ZoneName = "(UTC-12:00) 国际日期变更线西" });
+            list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC+00:00) 都柏林，爱丁堡，里斯本，伦敦" });
+            list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC) 协调世界时" });
             return list;
         }
     }

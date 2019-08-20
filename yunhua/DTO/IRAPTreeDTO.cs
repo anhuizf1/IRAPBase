@@ -23,6 +23,10 @@ namespace IRAPBase.DTO
     public class TreeViewDTO
     {
         /// <summary>
+        /// 分区键
+        /// </summary>
+         public long PartitioningKey { get; set; }
+        /// <summary>
         /// 结点标识
         /// </summary>
         public int NodeID { get; set; }

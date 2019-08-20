@@ -90,6 +90,25 @@ namespace IRAPBase
         }
 
         /// <summary>
+        /// 重置密码为123456
+        /// </summary>
+        /// <param name="pwd">重置的密码</param>
+        /// <returns></returns>
+        public IRAPError ResetPWD(string pwd)
+        {
+            user.EncryptedPWD = GetDBBinaryPassword(pwd);
+             
+            int resInt = _users.SaveChanges();
+            if (resInt > 0)
+            {
+                return new IRAPError(0, "重置密码成功！");
+            }
+            else
+            {
+                return new IRAPError(22, "重置密码失败，属性未发生变化无需修改！");
+            }
+        }
+        /// <summary>
         /// 删除此用户
         /// </summary>
         /// <returns></returns>

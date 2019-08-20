@@ -28,11 +28,11 @@ namespace TestConsole
             _log.Warn("测试!");
 
             var db= DBContextFactory.Instance.CreateContext("IRAPContext");
+            IRAPTreeSet tree = new IRAPTreeSet(57280, 3);
+             var list=  tree.TreeView(0, true);
+            //var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
 
-
-            var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
-
-            Console.WriteLine(pwdbyte);
+            //Console.WriteLine(pwdbyte);
             // var list= db.Set<ETreeBizClass>().Where(c => c.LeafID == 2361480).ToList();
 
             //  IRAPTreeModelSet treemodelSet = new IRAPTreeModelSet();
@@ -43,10 +43,10 @@ namespace TestConsole
             //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
 
 
-            //foreach (var r in list)
-            //{
-            //    Console.WriteLine("{0} {1}", r.TreeID,r.Leaf01);
-            //}
+            foreach (var r in list)
+            {
+                Console.WriteLine("{0} {1} ->{2}", r.NodeID, r.NodeName,r.CSTRoot);
+            }
             Console.WriteLine("ok.");
             Console.ReadKey();
         }
