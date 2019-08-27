@@ -457,8 +457,9 @@ namespace IRAPBase
         {
             return leaves.Where(r => r.Father == nodeID).ToList();
         }
-
         #endregion
+
+
         #region 根据权限呈现树的代码
         //权限向下追溯
         private void DownTree(IRAPTreeNodes rootNode, List<EGrant> grantList)
@@ -1258,6 +1259,11 @@ namespace IRAPBase
             return _treeClass.Where(c => c.Ordinal == attrIndex && leafSet.Contains(c.LeafID));
         }
 
+        /// <summary>
+        /// 获取分类属性集合
+        /// </summary>
+        /// <param name="leafSet"></param>
+        /// <returns></returns>
         public List<TreeClassifyRowDTO> GetClassifySet(List<int> leafSet)
         {
             var list2 = from s in _treeClass.Where(c => leafSet.Contains(c.LeafID))
@@ -1348,10 +1354,16 @@ namespace IRAPBase
             }
         }
 
+        /// <summary>
+        /// 根据
+        /// </summary>
+        /// <param name="communityID"></param>
+        /// <param name="treeID"></param>
+        /// <param name="dimCode"></param>
+        /// <param name="listSet"></param>
+        /// <returns></returns>
         public static List<TreeClassEntity> GetLeafSetByDimCode(int communityID, int treeID, string dimCode, List<int> listSet)
         {
-
-
             //string dimCode = "01020309";
             //解析完整的分类属性链
             int len = dimCode.Length;
@@ -1360,7 +1372,6 @@ namespace IRAPBase
             byte j = 0;
             for (int i = 0; i < len; i += 2)
             {
-
                 IRAPTreeModel treeModel = new IRAPTreeModel(trueTreeID);
                 var list = treeModel.GetClassify();
                 byte index = byte.Parse(dimCode.Substring(i, 2));
@@ -1395,7 +1406,6 @@ namespace IRAPBase
             }
             return lastSet;
             //  throw new NotImplementedException();
-
         }
 
         /// <summary>

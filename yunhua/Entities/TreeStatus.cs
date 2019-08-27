@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.ComponentModel.DataAnnotations;
 
 namespace IRAPBase.Entities
 {
@@ -13,34 +14,22 @@ namespace IRAPBase.Entities
     /// </summary>
     public class TreeStatus : BaseEntity
     {
-        /// <summary>
-        /// 分区键
-        /// </summary>
         public long PartitioningKey { get; set; }
-        // public Int16 TreeID { get; set; }
-        /// <summary>
-        /// 实体标识
-        /// </summary>
         public int EntityID { get; set; }
-        /// <summary>
-        /// 序号
-        /// </summary>
         public int Ordinal { get; set; }
-        /// <summary>
-        /// 第5棵树叶标识
-        /// </summary>
+        public int RowChecksum { get; set; }
+        public int VersionGE { get; set; }
+        public int VersionLE { get; set; }
         public int T5LeafID { get; set; }
-        /// <summary>
-        /// 状态值
-        /// </summary>
         public byte StatusValue { get; set; }
-        /// <summary>
-        /// 颜色
-        /// </summary>
+        public int StatusNameID { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string StatusNameInChinese { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string StatusNameInEnglish { get; set; }
         public int ColorRGBValue { get; set; }
-        /// <summary>
-        /// 转换控制值
-        /// </summary>
         public long TransitCtrlValue { get; set; }
     }
 

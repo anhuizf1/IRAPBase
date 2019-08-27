@@ -38,6 +38,9 @@ namespace IRAPBase
         }
         public Database DataBase { get { return this.Database; } }
 
+        /// <summary>
+        /// 获取上下文
+        /// </summary>
         public ObjectContext GetObjectContext { get { return ((IObjectContextAdapter)this).ObjectContext; } }
         public IRAPMyDBContext()
             : base("name=IRAPMyDBContext")
@@ -49,6 +52,10 @@ namespace IRAPBase
             Database.SetInitializer<IRAPMyDBContext>(null);
             //  Database.SetInitializer<IRAPDBContext>(new DropCreateDatabaseIfModelChanges<IRAPDBContext>());
         }
+        /// <summary>
+        /// 模型创建
+        /// </summary>
+        /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             //自动执行配置
@@ -93,7 +100,6 @@ namespace IRAPBase
             //modelBuilder.Entity<TreeBase>().HasKey(k => k.LeafID);
             // modelBuilder.Entity<ModelTreeClassfiy>();
             base.OnModelCreating(modelBuilder);
-
         }
 
         /// <summary>
