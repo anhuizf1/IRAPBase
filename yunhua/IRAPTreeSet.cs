@@ -267,6 +267,7 @@ namespace IRAPBase
                 rootNode.NodeID = node.NodeID;
                 rootNode.NodeCode = node.Code;
                 rootNode.NodeName = node.NodeName;
+                rootNode.EnglishName = node.DescInEnglish;
                 rootNode.NodeDepth = node.NodeDepth;
                 rootNode.NodeStatus = node.NodeStatus;
                 rootNode.NodeType = 3;
@@ -276,6 +277,7 @@ namespace IRAPBase
                 rootNode.Parent = node.Father;
                 rootNode.IconFile = node.IconID.ToString();
                 rootNode.Accessibility = 0;
+               
                 FindNodeAddToNode(rootNode, nodeSet, leafSet);
             }
             return rootNode;
@@ -374,6 +376,7 @@ namespace IRAPBase
                 NodeDepth = rootNode.NodeDepth,
                 NodeID = rootNode.NodeID,
                 NodeName = rootNode.NodeName,
+                EnglishName= rootNode.EnglishName,
                 NodeStatus = rootNode.NodeStatus,
                 NodeType = rootNode.NodeType,
                 Parent = rootNode.Parent,
@@ -383,6 +386,7 @@ namespace IRAPBase
                 TreeViewType = rootNode.TreeViewType,
                 UDFOrdinal = rootNode.UDFOrdinal
             };
+         
             rows.Add(item);
             if (rootNode.Children == null)
             {
@@ -411,6 +415,7 @@ namespace IRAPBase
                         NodeDepth = c.NodeDepth,
                         NodeID = c.NodeID,
                         NodeName = c.NodeName,
+                        EnglishName= c.EnglishName,
                         NodeStatus = c.NodeStatus,
                         NodeType = c.NodeType,
                         Parent = c.Parent,
@@ -561,6 +566,7 @@ namespace IRAPBase
                 node.NodeID = r.NodeID;
                 node.NodeCode = r.Code;
                 node.NodeName = r.NodeName;
+                node.EnglishName = r.DescInEnglish;
                 node.NodeDepth = r.NodeDepth;
                 node.NodeStatus = r.NodeStatus;
                 node.NodeType = 3;
@@ -596,6 +602,7 @@ namespace IRAPBase
                 node.NodeID = -r.LeafID;
                 node.NodeCode = r.Code;
                 node.NodeName = r.NodeName;
+                node.EnglishName = r.DescInEnglish;
                 node.NodeDepth = r.NodeDepth;
                 node.NodeStatus = (byte)(r.LeafStatus > 0 ? 1 : 0);
                 node.NodeType = 4;
@@ -1064,10 +1071,10 @@ namespace IRAPBase
             IRAPError error = new IRAPError();
             try
             {
-                if (nodeName == string.Empty)
+                if (nodeName == string.Empty && englishName==string.Empty)
                 {
                     error.ErrCode = 23;
-                    error.ErrText = $"结点名称不能为空！";
+                    error.ErrText = $"结点中文名称和英文名称不能同时为空！";
                     return error;
                 }
                 if (nodeID < 0)
@@ -1091,9 +1098,15 @@ namespace IRAPBase
                         }
                     }
                     thisNode.Code = nodeCode;
-                    thisNode.NodeName = nodeName;
+                    if (nodeName != "") {
+                        thisNode.NodeName = nodeName;
+                    }
+                    
                     thisNode.UDFOrdinal = udfOrdinal;
-                    thisNode.DescInEnglish = englishName;
+                    if (englishName != "")
+                    {
+                        thisNode.DescInEnglish = englishName;
+                    }
                     thisNode.ModifiedOn = DateTime.Now;
                     thisNode.ModifiedBy = modifiedBy;
                     context.SaveChanges();
@@ -1118,9 +1131,15 @@ namespace IRAPBase
 
                     thisNode.Code = nodeCode;
                     thisNode.AlternateCode = alternateCode;
-                    thisNode.NodeName = nodeName;
+                    if (nodeName != "")
+                    {
+                        thisNode.NodeName = nodeName;
+                    }
                     thisNode.UDFOrdinal = udfOrdinal;
-                    thisNode.DescInEnglish = englishName;
+                    if (englishName != "")
+                    {
+                        thisNode.DescInEnglish = englishName;
+                    }
                     thisNode.ModifiedBy = modifiedBy;
                     thisNode.ModifiedOn = DateTime.Now;
 
@@ -1149,7 +1168,7 @@ namespace IRAPBase
         /// <param name="nodeType">结点类型：3-结点 4-叶子</param>
         /// <param name="nodeID">结点标识</param>
         /// <returns></returns>
-        public IRAPError DeleteTreeNode(int nodeType, int nodeID)
+        public IRAPError DeleteTreeNode(int nodeType, int nodeID, bool forceDeleteAttr=false)
         {
             IRAPError error = new IRAPError();
             // long[] pkDict = new long[2] { PK, _treeID };
@@ -1209,10 +1228,26 @@ namespace IRAPBase
 
                     if (obj.Count > 0)
                     {
-                        var obj2 = obj[0];
-                        error.ErrCode = 22;
-                        error.ErrText = $"LeafID={nodeID}被系统分类属性 {obj2.LeafID} 引用无法删除！";
-                        return error;
+                        if (forceDeleteAttr)
+                        {
+                            if (_treeID <= 100)
+                            {
+                                context.DataBase.ExecuteSqlCommand("delete from IRAP..stb197 where A4LeafID=@NodeID",
+                                    new SqlParameter("@NodeID", nodeID));
+                            }
+                            else
+                            {
+                                context.DataBase.ExecuteSqlCommand("delete from IRAPMDM..stb198 where A4LeafID=@NodeID",
+                                    new SqlParameter("@NodeID", nodeID));
+                            }
+                        }
+                        else
+                        {
+                            var obj2 = obj[0];
+                            error.ErrCode = 22;
+                            error.ErrText = $"LeafID={nodeID}被系统分类属性 {obj2.LeafID} 引用无法删除！";
+                            return error;
+                        }
                     }
                     TableSet(thisNode).Remove(thisNode);
                     context.SaveChanges();
@@ -1465,6 +1500,8 @@ namespace IRAPBase
         /// 结点名称
         /// </summary>
         public string NodeName { get; set; }       //  --结点名称
+
+        public string EnglishName { get; set; } // 英文名称
         /// <summary>
         /// 父结点标识
         /// </summary>

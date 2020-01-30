@@ -50,6 +50,7 @@ namespace IRAPBase.DTO
         /// 结点名称
         /// </summary>
         public string NodeName { get; set; }      
+        public string EnglishName { get; set; }
         /// <summary>
         /// 父结点标识
         /// </summary>

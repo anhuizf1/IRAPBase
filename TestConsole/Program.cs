@@ -45,7 +45,7 @@ namespace TestConsole
 
             foreach (var r in list)
             {
-                Console.WriteLine("{0} {1} ->{2}", r.NodeID, r.NodeName,r.CSTRoot);
+                Console.WriteLine("{0} {1} ->{2}  {3}", r.NodeID, r.NodeName,r.CSTRoot,r.EnglishName);
             }
             Console.WriteLine("ok.");
             Console.ReadKey();
