@@ -107,6 +107,7 @@ namespace IRAPBase.DTO
         public string A4Code { get; set; }
         public string A4AlternateCode { get; set; }
         public string A4NodeName { get; set; }
+        public string A4EnglishName { get; set; }
     }
 
     public class StatusDTO
