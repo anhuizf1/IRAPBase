@@ -1007,7 +1007,15 @@ namespace IRAPBase
                 {
                     tran.Rollback();
                     res.ErrCode = 9999;
-                    res.ErrText = $"新增叶结点失败！原因是：{err.Message} ";
+                    if (err.InnerException != null)
+                    {
+                        res.ErrText = $"新增叶结点失败！原因是：{err.InnerException.Message} ";
+                    }
+                    else
+                    {
+                        res.ErrText = $"新增叶结点失败！原因是：{err.Message} ";
+                    }
+                    Console.WriteLine(err.StackTrace);
                 }
                 // }
                 return res;

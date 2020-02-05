@@ -29,7 +29,7 @@ namespace TestConsole
 
             var db= DBContextFactory.Instance.CreateContext("IRAPContext");
             IRAPTreeSet tree = new IRAPTreeSet(57280, 3);
-             var list=  tree.TreeView(0, true);
+
             //var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
 
             //Console.WriteLine(pwdbyte);
@@ -42,12 +42,8 @@ namespace TestConsole
 
             //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
 
-
-            foreach (var r in list)
-            {
-                Console.WriteLine("{0} {1} ->{2}  {3}", r.NodeID, r.NodeName,r.CSTRoot,r.EnglishName);
-            }
-            Console.WriteLine("ok.");
+           var error=  tree.NewTreeNode(4, 14309, "测试创建叶", "Test01", "Admin");
+            Console.WriteLine($"ok. {error.ErrText}");
             Console.ReadKey();
         }
 
