@@ -11,6 +11,7 @@ using System.Reflection;
 using IRAPBase.Serialize;
 using System.Data.SqlClient;
 using IRAPBase.Enums;
+using System.Data.Entity.Validation;
 
 namespace IRAPBase
 {
@@ -1003,7 +1004,7 @@ namespace IRAPBase
                     res.ErrCode = 0;
                     res.ErrText = $"新增叶结点成功！叶结点标识：{e.LeafID} ";
                 }
-                catch (Exception err)
+                catch (DbEntityValidationException err)
                 {
                     tran.Rollback();
                     res.ErrCode = 9999;
