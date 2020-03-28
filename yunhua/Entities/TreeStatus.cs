@@ -14,6 +14,11 @@ namespace IRAPBase.Entities
     /// </summary>
     public class TreeStatus : BaseEntity
     {
+        public TreeStatus()
+        {
+            StatusNameInChinese = "中文";
+            StatusNameInEnglish = "EnglishName";
+        }
         public long PartitioningKey { get; set; }
         public int EntityID { get; set; }
         public int Ordinal { get; set; }

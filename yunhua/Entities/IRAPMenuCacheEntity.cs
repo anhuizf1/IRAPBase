@@ -20,8 +20,8 @@ namespace IRAPBase.Entities
         public int RoleLeaf { get; set; }
         public int StationGroupID { get; set; }
         public short LanguageID { get; set; }
-        public int ProgLanguageID { get; set; }
-        public int MenuStyle { get; set; }
+        public byte? ProgLanguageID { get; set; }
+        public Int16 MenuStyle { get; set; }
     }
 
     /// <summary>

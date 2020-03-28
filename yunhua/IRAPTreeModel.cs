@@ -56,28 +56,29 @@ namespace IRAPBase
             _treeID = treeID;
             _classifySet = db.Set<ModelTreeClassfiyEntity>().Where(c => c.TreeID == _treeID);
             _transientSet = db.Set<ModelTreeTransient>().Where(c => c.TreeID == _treeID);
-            _namespaces = db.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
+            _namespaces = db.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == 0  );
             _statusSet = db.Set<ModelTreeStatus>().Where(c => c.TreeID == _treeID);
         }
         #region 查询分类、瞬态、状态属性清单
         /// <summary>
         /// 获取分类属性定义清单
         /// </summary>
-        public List<TreeClassifyModelDTO> GetClassify()
+        public List<TreeClassifyModelDTO> GetClassify(short languageID=30)
         {
            Log.Instance.WriteMsg<IRAPTreeModel>(Enums.LogType.DEBUG,$"参数 {_treeID} ");
 
-            return _classifySet.Join(_namespaces, a => a.AttrNameID, b => b.NameID, (a, b) =>
+            return _classifySet.Join(_namespaces.Where(c=>c.LanguageID==languageID), a => a.AttrNameID, b => b.NameID, (a, b) =>
             new TreeClassifyModelDTO { AttrIndex = a.AttrIndex, AttrName = b.NameDescription, AttrTreeID = a.AttrTreeID, SaveChangeHistory = a.SaveChangeHistory })
+             
               .OrderBy(c => c.AttrIndex).ToList();
         }
         /// <summary>
         /// 获取瞬态属性定义
         /// </summary>
         /// <returns></returns>
-        public List<TreeTransientModelDTO> GetTransient()
+        public List<TreeTransientModelDTO> GetTransient(short languageID = 30)
         {
-            return _transientSet.Join(_namespaces, a => a.StatNameID, b => b.NameID, (a, b) =>
+            return _transientSet.Join(_namespaces.Where(c=>c.LanguageID==30), a => a.StatNameID, b => b.NameID, (a, b) =>
            new TreeTransientModelDTO { AttrIndex = a.StatIndex, AttrName = b.NameDescription, Protected = a.Protected, Scale = a.Scale, UnitOfMeasure = a.UnitOfMeasure })
              .OrderBy(c => c.AttrIndex).ToList();
         }
@@ -99,7 +100,7 @@ namespace IRAPBase
         /// </summary>
         /// <param name="ordinal"></param>
         /// <returns></returns>
-        public List<TreeStatusModelRowDTO> GetStatusList(int ordinal)
+        public List<TreeStatusModelRowDTO> GetStatusList(int ordinal,short languageID=30)
         {
             var statusList = GetStatus();
             var stateEntity = statusList.FirstOrDefault(c => c.AttrIndex == ordinal);
@@ -112,7 +113,7 @@ namespace IRAPBase
 
             var list = db.Set<ModelTreeStatusList>().Where(c => c.PartitioningKey == 5 && c.EntityID == t5EntityID);
 
-            return list.Join(_namespaces, a => a.StatusNameID, b => b.NameID, (a, b) =>
+            return list.Join(_namespaces.Where(c=>c.LanguageID==languageID), a => a.StatusNameID, b => b.NameID, (a, b) =>
             new TreeStatusModelRowDTO { Ordinal = (byte)ordinal, StatusIndex = (byte)a.Ordinal, StatusName = b.NameDescription, Status = a.Status })
             .OrderBy(c => c.Ordinal).ThenBy(c => c.StatusIndex).ToList();
         }
@@ -405,11 +406,11 @@ namespace IRAPBase
         /// 获取行集属性定义
         /// </summary>
         /// <returns></returns>
-        public List<RowSetDefineDTO> GetRowSet()
+        public List<RowSetDefineDTO> GetRowSet(short languageID=30)
         {
             var rowSet = db.Set<ModelTreeRowSet>().Where(c => c.TreeID == _treeID);
             var dto = from a in rowSet
-                      join b in _namespaces on a.RSAttrNameID equals b.NameID
+                      join b in _namespaces on a.RSAttrNameID equals b.NameID where b.LanguageID==languageID
                       orderby a.RowSetID
                       select new RowSetDefineDTO
                       {
@@ -539,11 +540,11 @@ namespace IRAPBase
         /// 获取树的层次定义
         /// </summary>
         /// <returns></returns>
-        public List<TreeLevelDTO> GetTreeLevel()
+        public List<TreeLevelDTO> GetTreeLevel(short languageID=30)
         {
             var levelSet = db.Set<TreeLevelEntity>().Where(c => c.TreeID == _treeID).OrderBy(c => c.NodeDepth);
             var dto = from a in levelSet
-                      join b in _namespaces on a.LevelAliasNameID equals b.NameID
+                      join b in _namespaces on a.LevelAliasNameID equals b.NameID where  b.LanguageID==languageID
                       select new TreeLevelDTO
                       {
                           DefaultIconID = a.DefaultIconID,
@@ -561,8 +562,9 @@ namespace IRAPBase
         /// <param name="levelName">层次名称</param>
         /// <param name="defaultIconID">默认图标ID</param>
         /// <param name="codingRule">编码规则</param>
+        /// <param name="languageID">语言</param>
         /// <returns></returns>
-        public IRAPError DefineTreeLevel(byte nodeDepth, string levelName, string codingRule = "", int defaultIconID = 0)
+        public IRAPError DefineTreeLevel(byte nodeDepth, string levelName, string codingRule = "", int defaultIconID = 0, int languageID=30)
         {
             if (nodeDepth != 255)
             {
@@ -573,7 +575,7 @@ namespace IRAPBase
             }
             var dbContext = db.Set<TreeLevelEntity>();
             var levelEntity = dbContext.FirstOrDefault(c => c.TreeID == _treeID && c.NodeDepth == nodeDepth);
-            var nameID = IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys).GetNameID(0, levelName);
+            var nameID = IRAPNamespaceSetFactory.CreatInstance(Enums.NamespaceType.Sys).GetNameID(0, levelName, languageID);
             if (levelEntity == null)
             {
                 TreeLevelEntity e = new TreeLevelEntity()

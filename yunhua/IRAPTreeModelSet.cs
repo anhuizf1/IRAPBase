@@ -252,12 +252,10 @@ namespace IRAPBase
         /// 获取所有树清单
         /// </summary>
         /// <returns></returns>
-        public List<TreeModelDTO> GetAllTrees()
+        public List<TreeModelDTO> GetAllTrees(short languageID =30)
         {
             var trees = db.Set<ModelSysTreeEntity>();
-            var namespaces = db.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
-
-            
+            var namespaces = db.Set<SysNameSpaceEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == languageID);
 
             var treeList = from a in trees
                            join b in namespaces on a.NameID equals b.NameID
@@ -288,7 +286,7 @@ namespace IRAPBase
             var list = treeList.ToList();
             //再找大于100的树
             var trees2 = mdmdb.Set<ModelBizTreeEntity>();
-            var namespaces2 = mdmdb.Set<SysNameSpaceMDMEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == 30);
+            var namespaces2 = mdmdb.Set<SysNameSpaceMDMEntity>().Where(c => c.PartitioningKey == 0 && c.LanguageID == languageID);
             var treeList2 = from a in trees2
                             join b in namespaces2 on a.NameID equals b.NameID
                             join c in namespaces2 on a.EntityCodeNameID equals c.NameID into x

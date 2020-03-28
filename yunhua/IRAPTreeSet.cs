@@ -188,7 +188,7 @@ namespace IRAPBase
         /// 获取树视图（不带权限）
         /// </summary>
         /// <returns></returns>
-        public List<TreeViewDTO> TreeView(int entryNode = 0, bool includeLeaves = true, bool includeShareData =true )
+        public List<TreeViewDTO> TreeView(int entryNode = 0, bool includeLeaves = true, bool includeShareData = true)
         {
             List<TreeViewDTO> resList = GetPlainTreeData(TreeViewData(entryNode, includeLeaves, includeShareData));
             return resList;
@@ -206,7 +206,7 @@ namespace IRAPBase
         /// 返回树的数据，支持懒加载 
         /// </summary>
         /// <returns></returns>
-        private IRAPTreeNodes TreeViewData(int entryNode = 0, bool includingLeaves = true, bool includeShareData=true)
+        private IRAPTreeNodes TreeViewData(int entryNode = 0, bool includingLeaves = true, bool includeShareData = true)
         {
             //long[] pkArray = { PK + _treeID, _treeID };
             int errCode = 0;
@@ -218,11 +218,11 @@ namespace IRAPBase
             }
             else
             {
-                newNodelist = nodes.Where(r => r.TreeID == _treeID &&  r.PartitioningKey== PK).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
+                newNodelist = nodes.Where(r => r.TreeID == _treeID && r.PartitioningKey == PK).OrderBy(r => r.NodeDepth).ThenBy(r => r.NodeID).ToList();
             }
 
             int repeat = newNodelist.GroupBy(g => g.NodeID).Where(s => s.Count() > 1).Count();
-            if (repeat>0)
+            if (repeat > 0)
             {
                 errCode = 2;
                 errText = $"树标识:{_treeID}发现结点数据重复 请检查！";
@@ -256,7 +256,7 @@ namespace IRAPBase
                 }
                 else
                 {
-                    leafSet = leaves.Where(r => r.TreeID == _treeID && PK==r.PartitioningKey ).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
+                    leafSet = leaves.Where(r => r.TreeID == _treeID && PK == r.PartitioningKey).OrderBy(r => r.UDFOrdinal).Take(50000).ToList();
                 }
             }
 
@@ -278,24 +278,30 @@ namespace IRAPBase
                 rootNode.Parent = node.Father;
                 rootNode.IconFile = node.IconID.ToString();
                 rootNode.Accessibility = 0;
-               
+
                 FindNodeAddToNode(rootNode, nodeSet, leafSet);
             }
             return rootNode;
         }
+
+
+
         /// <summary>
         /// 获取树视图（带权限）
         /// </summary>
-        /// <param name="agencyNode">机构标识（仅支持叶子）</param>
-        /// <param name="roleNode">角色标识（</param>
+        /// <param name="agencyNode"></param>
+        /// <param name="roleNode"></param>
+        /// <param name="entryNode"></param>
+        /// <param name="includingLeaves"></param>
+        /// <param name="includeShareData"></param>
         /// <returns></returns>
-        public List<TreeViewDTO> AccessibleTreeView(int agencyNode, int roleNode)
+        public List<TreeViewDTO> AccessibleTreeView(int agencyNode, int roleNode, int entryNode=0, bool includingLeaves = true, bool includeShareData = true)
         {
             IRAPGrant grant = new IRAPGrant(_communityID);
             accessibleNodes.Clear();
             List<EGrant> list = grant.GetGrantListByTree(_treeID, agencyNode, roleNode);
 
-            IRAPTreeNodes rootTree = TreeViewData();
+            IRAPTreeNodes rootTree = TreeViewData(entryNode,includingLeaves,includeShareData);
 
             DownTree(rootTree, list);
             foreach (var node in accessibleNodes)
@@ -366,7 +372,7 @@ namespace IRAPBase
             List<TreeViewDTO> rows = new List<TreeViewDTO>();
             TreeViewDTO item = new TreeViewDTO()
             {
-                PartitioningKey= rootNode.PartitioningKey,
+                PartitioningKey = rootNode.PartitioningKey,
                 Accessibility = rootNode.Accessibility,
                 CSTRoot = rootNode.CSTRoot,
                 HelpMemoryCode = rootNode.HelpMemoryCode,
@@ -377,7 +383,7 @@ namespace IRAPBase
                 NodeDepth = rootNode.NodeDepth,
                 NodeID = rootNode.NodeID,
                 NodeName = rootNode.NodeName,
-                EnglishName= rootNode.EnglishName,
+                EnglishName = rootNode.EnglishName,
                 NodeStatus = rootNode.NodeStatus,
                 NodeType = rootNode.NodeType,
                 Parent = rootNode.Parent,
@@ -387,7 +393,7 @@ namespace IRAPBase
                 TreeViewType = rootNode.TreeViewType,
                 UDFOrdinal = rootNode.UDFOrdinal
             };
-         
+
             rows.Add(item);
             if (rootNode.Children == null)
             {
@@ -416,7 +422,7 @@ namespace IRAPBase
                         NodeDepth = c.NodeDepth,
                         NodeID = c.NodeID,
                         NodeName = c.NodeName,
-                        EnglishName= c.EnglishName,
+                        EnglishName = c.EnglishName,
                         NodeStatus = c.NodeStatus,
                         NodeType = c.NodeType,
                         Parent = c.Parent,
@@ -475,7 +481,7 @@ namespace IRAPBase
             {
                 if (grantList.Any(c => c.CSTRoot == rootNode.CSTRoot))
                 {
-                    rootNode.Accessibility = AccessibilityType.Radio ;
+                    rootNode.Accessibility = AccessibilityType.Radio;
                     accessibleNodes.Add(rootNode);
                 }
             }
@@ -489,7 +495,7 @@ namespace IRAPBase
                 return;
             }
             bool subAccessible = false;
-            if (rootNode.Accessibility ==  AccessibilityType.Radio)
+            if (rootNode.Accessibility == AccessibilityType.Radio)
             {
                 subAccessible = true;
                 accessibleNodes.Add(rootNode);
@@ -498,17 +504,17 @@ namespace IRAPBase
             {
                 if (subAccessible)
                 {
-                    r.Accessibility =  AccessibilityType.Radio;
+                    r.Accessibility = AccessibilityType.Radio;
                 }
                 else
                 {
                     if (grantList.Any(c => c.CSTRoot == r.CSTRoot))
                     {
-                        r.Accessibility =  AccessibilityType.Radio;
+                        r.Accessibility = AccessibilityType.Radio;
                     }
                 }
                 DownTree(r, grantList);
-                if (r.Accessibility ==  AccessibilityType.Radio)
+                if (r.Accessibility == AccessibilityType.Radio)
                 {
                     accessibleNodes.Add(r);
                 }
@@ -532,7 +538,7 @@ namespace IRAPBase
             //    Console.WriteLine("节点{0}无权访问已删除！", ei.NodeID);
             //}
             list.RemoveAll(s => s.Accessibility == 0);
-            var q2 = from c in list where c.Accessibility ==  AccessibilityType.Radio select c;
+            var q2 = from c in list where c.Accessibility == AccessibilityType.Radio select c;
             foreach (var ei in q2)
             {
                 RemoveNoAccessible(ei);
@@ -545,9 +551,9 @@ namespace IRAPBase
             {
                 return;
             }
-            if (fatherNode.Accessibility !=  AccessibilityType.Radio)
+            if (fatherNode.Accessibility != AccessibilityType.Radio)
             {
-                fatherNode.Accessibility =  AccessibilityType.Radio;
+                fatherNode.Accessibility = AccessibilityType.Radio;
             }
             UpTree(fatherNode.FatherNode);
         }
@@ -577,7 +583,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility =  AccessibilityType.Radio;
+                node.Accessibility = AccessibilityType.Radio;
                 node.AlternateCode = "";
                 root.Children.Add(node);
                 FindNodeAddToNode(node, nodeSet, leafSet);
@@ -613,7 +619,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility =  AccessibilityType.Radio;
+                node.Accessibility = AccessibilityType.Radio;
                 node.AlternateCode = r.AlternateCode;
                 root.Children.Add(node);
             }
@@ -729,11 +735,25 @@ namespace IRAPBase
                         throw new Exception($"此树的结点代码不允许重复，代码 {nodeCode} 已经存在！");
                     }
                 }
+                IIRAPNamespaceSet namespaceSet;
+                if (_treeID < 100)
+                {
+                    namespaceSet = IRAPNamespaceSetFactory.CreatInstance(NamespaceType.Sys);
+                }
+                else
+                {
+                    namespaceSet = IRAPNamespaceSetFactory.CreatInstance(NamespaceType.Biz);
+                }
+                int nameID = 0;
+                if (nodeName != "")
+                {
+                    nameID = namespaceSet.GetNameID(_communityID, nodeName, 30);
+                }
 
                 TreeNodeEntity e = new TreeNodeEntity
                 {
                     PartitioningKey = PK,
-                    NameID = 0,
+                    NameID = nameID,
                     IconID = 0,
                     NodeDepth = (byte)nodeDepth,
                     NodeID = 0, //申请
@@ -825,10 +845,24 @@ namespace IRAPBase
                     res.ErrText = $"父结点：{fatherNode}不存在！";
                     return res;
                 }
+                IIRAPNamespaceSet namespaceSet;
+                if (_treeID < 100)
+                {
+                    namespaceSet = IRAPNamespaceSetFactory.CreatInstance(NamespaceType.Sys);
+                }
+                else
+                {
+                    namespaceSet = IRAPNamespaceSetFactory.CreatInstance(NamespaceType.Biz);
+                }
+                int nameID = 0;
+                if (nodeName != "")
+                {
+                    nameID = namespaceSet.GetNameID(_communityID, nodeName, 30); 
+                }
                 TreeLeafEntity e = new TreeLeafEntity
                 {
                     PartitioningKey = PK,
-                    NameID = 0,
+                    NameID = nameID,
                     IconID = 0,
                     AlternateCode = alterNateCode,
                     NodeDepth = (byte)(father.NodeDepth + 1),
@@ -1080,7 +1114,7 @@ namespace IRAPBase
             IRAPError error = new IRAPError();
             try
             {
-                if (nodeName == string.Empty && englishName==string.Empty)
+                if (nodeName == string.Empty && englishName == string.Empty)
                 {
                     error.ErrCode = 23;
                     error.ErrText = $"结点中文名称和英文名称不能同时为空！";
@@ -1107,10 +1141,11 @@ namespace IRAPBase
                         }
                     }
                     thisNode.Code = nodeCode;
-                    if (nodeName != "") {
+                    if (nodeName != "")
+                    {
                         thisNode.NodeName = nodeName;
                     }
-                    
+
                     thisNode.UDFOrdinal = udfOrdinal;
                     if (englishName != "")
                     {
@@ -1177,7 +1212,7 @@ namespace IRAPBase
         /// <param name="nodeType">结点类型：3-结点 4-叶子</param>
         /// <param name="nodeID">结点标识</param>
         /// <returns></returns>
-        public IRAPError DeleteTreeNode(int nodeType, int nodeID, bool forceDeleteAttr=false)
+        public IRAPError DeleteTreeNode(int nodeType, int nodeID, bool forceDeleteAttr = false)
         {
             IRAPError error = new IRAPError();
             // long[] pkDict = new long[2] { PK, _treeID };
@@ -1311,7 +1346,7 @@ namespace IRAPBase
         public List<TreeClassifyRowDTO> GetClassifySet(List<int> leafSet)
         {
             var list2 = from s in _treeClass.Where(c => leafSet.Contains(c.LeafID))
-                        //where s.Ordinal == (int)attrIndex
+                            //where s.Ordinal == (int)attrIndex
                         group s by s.LeafID into g
                         select new { g.Key, Rows = g };
             var resList = new List<TreeClassifyRowDTO>();
@@ -1319,7 +1354,7 @@ namespace IRAPBase
             {
                 TreeClassifyRowDTO r = new TreeClassifyRowDTO()
                 {
-                    TreeID= _treeID,
+                    TreeID = _treeID,
                     LeafID = x.Key,
                     Leaf01 = x.Rows.FirstOrDefault(c => c.Ordinal == 1) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 1).A4LeafID,
                     Leaf02 = x.Rows.FirstOrDefault(c => c.Ordinal == 2) == null ? 0 : x.Rows.FirstOrDefault(c => c.Ordinal == 2).A4LeafID,

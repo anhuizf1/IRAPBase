@@ -210,19 +210,35 @@ namespace IRAPBase
             return list;
         }
 
-        public List<ZoneDTO> GetZones()
+        public List<ZoneDTO> GetZones(short languageID=30)
         {
             var list = new List<ZoneDTO>();
-            list.Add(new ZoneDTO { Zone = 8, ZoneName = "(UTC+08:00) 北京，重庆，香港特别行政区，乌鲁木齐" });
-            list.Add(new ZoneDTO { Zone = 9, ZoneName = "(UTC+09:00) 大阪、札幌、東京" });
-            list.Add(new ZoneDTO { Zone = -5, ZoneName = "(UTC-05:00) 东部时间(美国和加拿大)" });
-            list.Add(new ZoneDTO { Zone = -6, ZoneName = "(UTC-06:00) 中部时间(美国和加拿大)" });
-            list.Add(new ZoneDTO { Zone = -7, ZoneName = "(UTC-07:00) 山地时间(美国和加拿大)" });
-            list.Add(new ZoneDTO { Zone = -8, ZoneName = "(UTC-08:00) 太平洋时间(美国和加拿大)" });
-            list.Add(new ZoneDTO { Zone = -10, ZoneName = "(UTC-10:00) 夏威夷" });
-            list.Add(new ZoneDTO { Zone = -12, ZoneName = "(UTC-12:00) 国际日期变更线西" });
-            list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC+00:00) 都柏林，爱丁堡，里斯本，伦敦" });
-            list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC) 协调世界时" });
+            if (languageID == 30)
+            {
+                list.Add(new ZoneDTO { Zone = 8, ZoneName = "(UTC+08:00) 北京，重庆，香港特别行政区，乌鲁木齐" });
+                list.Add(new ZoneDTO { Zone = 9, ZoneName = "(UTC+09:00) 大阪、札幌、東京" });
+                list.Add(new ZoneDTO { Zone = -5, ZoneName = "(UTC-05:00) 东部时间(美国和加拿大)" });
+                list.Add(new ZoneDTO { Zone = -6, ZoneName = "(UTC-06:00) 中部时间(美国和加拿大)" });
+                list.Add(new ZoneDTO { Zone = -7, ZoneName = "(UTC-07:00) 山地时间(美国和加拿大)" });
+                list.Add(new ZoneDTO { Zone = -8, ZoneName = "(UTC-08:00) 太平洋时间(美国和加拿大)" });
+                list.Add(new ZoneDTO { Zone = -10, ZoneName = "(UTC-10:00) 夏威夷" });
+                list.Add(new ZoneDTO { Zone = -12, ZoneName = "(UTC-12:00) 国际日期变更线西" });
+                list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC+00:00) 都柏林，爱丁堡，里斯本，伦敦" });
+                list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC) 协调世界时" });
+            }
+            if (languageID == 0)
+            {
+                list.Add(new ZoneDTO { Zone = 8, ZoneName = "(UTC+08:00) Beijing,chognqing,Shanghai,Urumqi" });
+                list.Add(new ZoneDTO { Zone = 9, ZoneName = "(UTC+09:00) Osaka, Sapporo, Tokyo" });
+                list.Add(new ZoneDTO { Zone = -5, ZoneName = "(UTC-05:00) Eastern time (US and Canada)" });
+                list.Add(new ZoneDTO { Zone = -6, ZoneName = "(UTC-06:00) Central time (US and Canada)" });
+                list.Add(new ZoneDTO { Zone = -7, ZoneName = "(UTC-07:00) Mountain time (USA and Canada)" });
+                list.Add(new ZoneDTO { Zone = -8, ZoneName = "(UTC-08:00) Pacific time (US and Canada)" });
+                list.Add(new ZoneDTO { Zone = -10, ZoneName = "(UTC-10:00) Hawaiian" });
+                list.Add(new ZoneDTO { Zone = -12, ZoneName = "(UTC-12:00) International date change line west" });
+                list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC+00:00) Dublin, Edinburgh, Lisbon, London" });
+                list.Add(new ZoneDTO { Zone = 0, ZoneName = "(UTC)  Coordinated Universal Time" });
+            }
             return list;
         }
     }

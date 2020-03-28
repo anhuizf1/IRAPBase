@@ -27,9 +27,18 @@ namespace TestConsole
 
             _log.Warn("测试!");
 
-            var db= DBContextFactory.Instance.CreateContext("IRAPContext");
-            IRAPTreeSet tree = new IRAPTreeSet(57280, 3);
+            //var db= DBContextFactory.Instance.CreateContext("IRAPContext");
 
+         
+
+            IRAPTreeSet tree = new IRAPTreeSet(60035, 173);
+            var list=  tree.TreeModel.GetClassify();
+            var list2 = tree.TreeView(0, true, true);
+
+            foreach (var r in list2)
+            {
+                Console.WriteLine("{0}", r.NodeName);
+            }
             //var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
 
             //Console.WriteLine(pwdbyte);
@@ -41,9 +50,8 @@ namespace TestConsole
             //throw new Exception("Error!");
 
             //  var list2 = from a in list group a by a.LeafID into g select new { g.Key,items=g };
-
-           var error=  tree.NewTreeNode(4, 14309, "测试创建叶", "Test01", "Admin");
-            Console.WriteLine($"ok. {error.ErrText}");
+ 
+           //  Console.WriteLine($"ok. {error.ErrText}");
             Console.ReadKey();
         }
 
