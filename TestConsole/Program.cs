@@ -31,13 +31,13 @@ namespace TestConsole
 
          
 
-            IRAPTreeSet tree = new IRAPTreeSet(60035, 173);
+            IRAPTreeSet tree = new IRAPTreeSet(60035, 16);
             var list=  tree.TreeModel.GetClassify();
-            var list2 = tree.TreeView(0, true, true);
+            var list2 = tree.AccessibleTreeView(-5334903, -353680, 5740, true, true);
 
             foreach (var r in list2)
             {
-                Console.WriteLine("{0}", r.NodeName);
+                Console.WriteLine("{0}{1}",r.NodeID, r.NodeName);
             }
             //var pwdbyte=  IRAPUser.GetDBBinaryPassword("123456");
 

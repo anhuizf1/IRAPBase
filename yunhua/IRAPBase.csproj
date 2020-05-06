@@ -122,6 +122,8 @@
     <Compile Include="IRAPBizModelSet.cs" />
     <Compile Include="IRAPCommunitySet.cs" />
     <Compile Include="IRAPErrorSet.cs" />
+    <Compile Include="IRAPFuncBase.cs" />
+    <Compile Include="IRAPOperBase.cs" />
     <Compile Include="IRAPTreeModel.cs" />
     <Compile Include="ITreeBase-del.cs" />
     <Compile Include="IRAPWorkbench.cs" />
@@ -143,7 +145,6 @@
     <Compile Include="Entities\TreeCorrEntity.cs" />
     <Compile Include="Enums\NamespaceType.cs" />
     <Compile Include="IRAPNamespaceSet.cs" />
-    <Compile Include="IRAPOperBase.cs" />
     <Compile Include="IRAPParameterSet.cs" />
     <Compile Include="IRAPSequence.cs" />
     <Compile Include="IRAPTree.cs" />
@@ -164,7 +165,6 @@
     <Compile Include="Entities\TreeLevelEntity.cs" />
     <Compile Include="Entities\TreeStatus.cs" />
     <Compile Include="Entities\TreeTransient.cs" />
-    <Compile Include="IRAPFuncBase.cs" />
     <Compile Include="IRAPGrant.cs" />
     <Compile Include="IRAPLog.cs" />
     <Compile Include="IRAPSqlDBContext.cs" />

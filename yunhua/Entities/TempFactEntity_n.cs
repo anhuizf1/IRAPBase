@@ -177,42 +177,42 @@ namespace IRAPBase.Entities
         public long LinkedFactID { get; set; }
     }
 
-    //[Table("TempFact_OLTP")]
-    //public class FactEntity : OLTPFactEntity
-    //{
+    [Table("TempFact_OLTP")]
+    public class FactEntity : OLTPFactEntity
+    {
 
-    //}
+    }
 
-    //[Table("TempFact_Recycle")]
-    //public class RecycleFactEntity : OLTPFactEntity
-    //{
+    [Table("TempFact_Recycle")]
+    public class RecycleFactEntity : OLTPFactEntity
+    {
 
-    //}
+    }
 
-    //public class FactEntityMap : EntityTypeConfiguration<FactEntity>
-    //{
-    //    public FactEntityMap()
-    //    {
-    //        //表定义
-    //        // ToTable("stb006");
-    //        HasKey(t => new { t.PartitioningKey,t.FactID });
-    //        Property(t => t.TransactNo).IsRequired();
-    //        Property(t => t.Remark).IsRequired();
-    //        //   Property(p => p.LanguageID).HasColumnType("smallint");
-    //    }
-    //}
+    public class FactEntityMap : EntityTypeConfiguration<FactEntity>
+    {
+        public FactEntityMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey,t.FactID });
+            Property(t => t.TransactNo).IsRequired();
+            Property(t => t.Remark).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 
-    //public class RecycleFactEntityMap : EntityTypeConfiguration<RecycleFactEntity>
-    //{
-    //    public RecycleFactEntityMap()
-    //    {
-    //        //表定义
-    //        // ToTable("stb006");
-    //        HasKey(t => new { t.PartitioningKey, t.FactID });
-    //        Property(t => t.TransactNo).IsRequired();
-    //        Property(t => t.Remark).IsRequired();
-    //        //   Property(p => p.LanguageID).HasColumnType("smallint");
-    //    }
-    //}
+    public class RecycleFactEntityMap : EntityTypeConfiguration<RecycleFactEntity>
+    {
+        public RecycleFactEntityMap()
+        {
+            //表定义
+            // ToTable("stb006");
+            HasKey(t => new { t.PartitioningKey, t.FactID });
+            Property(t => t.TransactNo).IsRequired();
+            Property(t => t.Remark).IsRequired();
+            //   Property(p => p.LanguageID).HasColumnType("smallint");
+        }
+    }
 
 }

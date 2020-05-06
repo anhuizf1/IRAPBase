@@ -275,6 +275,7 @@ namespace IRAPBase
                 rootNode.CSTRoot = node.CSTRoot;
                 rootNode.UDFOrdinal = node.UDFOrdinal;
                 rootNode.TreeViewType = 2;
+                rootNode.Accessibility = AccessibilityType.Disabled;
                 rootNode.Parent = node.Father;
                 rootNode.IconFile = node.IconID.ToString();
                 rootNode.Accessibility = 0;
@@ -583,7 +584,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = AccessibilityType.Radio;
+                node.Accessibility = AccessibilityType.Disabled;
                 node.AlternateCode = "";
                 root.Children.Add(node);
                 FindNodeAddToNode(node, nodeSet, leafSet);
@@ -619,7 +620,7 @@ namespace IRAPBase
                 node.Parent = r.Father;
                 node.IconFile = r.IconID.ToString();
                 node.FatherNode = root;
-                node.Accessibility = AccessibilityType.Radio;
+                node.Accessibility = AccessibilityType.Disabled;
                 node.AlternateCode = r.AlternateCode;
                 root.Children.Add(node);
             }

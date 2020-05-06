@@ -98,7 +98,7 @@ namespace IRAPBase
             _db = DBContextFactory.Instance.CreateContext(dbName + "Context");
             this.access_token = access_token;
             var logDB = new IRAPLog();
-
+            
             log = logDB.GetLogIDByToken(access_token);
             if (log != null)
             {
@@ -124,7 +124,7 @@ namespace IRAPBase
             log = logDB.GetLogIDByToken(access_token);
             if (log != null)
             {
-                _communityID = (int)log.PartitioningKey / 10000;
+               _communityID= (int)log.PartitioningKey / 10000;
             }
             if (_communityID == 0)
             {
@@ -174,9 +174,9 @@ namespace IRAPBase
                     Operator = log.UserCode,
                     OperTime = DateTime.Now,
                     OpNodes = _opID.ToString(),
-                    PartitionPolicy = TransPK,
+                    PartitioningKey = TransPK,
                     StationID = log.StationID,
-                    Status = 0,
+                    Status = 1,
                     Remark = remark,
                     TransactNo = transactNo,
                     VoucherNo = voucherNo
@@ -187,12 +187,6 @@ namespace IRAPBase
             }
             catch (Exception err)
             {
-                string errMsg = err.InnerException != null ? err.InnerException.Message : err.Message;
-                Log.WriteLocalMsg(9999, "申请交易号异常：" + errMsg);
-                if (err.InnerException != null)
-                {
-                    throw err.InnerException;
-                }
                 throw err;
             }
         }
@@ -201,76 +195,76 @@ namespace IRAPBase
         /// </summary>
         /// <param name="e"></param>
         /// <returns></returns>
-        //public virtual IRAPError SaveTempFact(FactEntity e)
-        //{
-        //    if (e.FactID <= 0)
-        //    {
-        //        return new IRAPError(22, "事实编号不能为小于等于0！");
-        //    }
-        //    if (e.OpType == 0)
-        //    {
-        //        return new IRAPError(22, "操作类型不能为0，没有操作类型时请传1 ！");
-        //    }
-        //    e.OpID = _opID;
-        //    e.BusinessDate = DateTime.Now;
-        //    e.PartitioningKey = TempFactPK;
-        //    TableSet(e).Add(e);
-        //    // _db.SaveChanges();
-        //    return new IRAPError(0, "保存成功！");
-        //}
+        public virtual IRAPError SaveTempFact(FactEntity e)
+        {
+            if (e.FactID <= 0)
+            {
+                return new IRAPError(22, "事实编号不能为小于等于0！");
+            }
+            if (e.OpType == 0)
+            {
+                return new IRAPError(22, "操作类型不能为0，没有操作类型时请传1 ！");
+            }
+            e.OpID = _opID;
+            e.BusinessDate = DateTime.Now;
+            e.PartitioningKey = TempFactPK;
+            TableSet(e).Add(e);
+            // _db.SaveChanges();
+            return new IRAPError(0, "保存成功！");
+        }
         /// <summary>
         /// 固化事实
         /// </summary>
         /// <param name="factID">事实编号</param>
         /// <returns></returns>
-        //public virtual FactEntity GetFixedFact(long factID)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public virtual FactEntity GetFixedFact(long factID)
+        {
+            throw new NotImplementedException();
+        }
         /// <summary>
         /// 临时事实
         /// </summary>
         /// <param name="factID"></param>
         /// <param name="opID"></param>
         /// <returns></returns>
-        //public virtual FactEntity GetTempFact(long factID,int opID)
-        //{
-
-        //    return _db.Set<FactEntity>().FirstOrDefault(c =>  c.PartitioningKey ==TempFactPK  && c.OpID==opID && c.FactID == factID);
-        //    //throw new NotImplementedException();
-        //}
+        public virtual FactEntity GetTempFact(long factID,int opID)
+        {
+         
+            return _db.Set<FactEntity>().FirstOrDefault(c =>  c.PartitioningKey ==TempFactPK  && c.OpID==opID && c.FactID == factID);
+            //throw new NotImplementedException();
+        }
         /// <summary>
         /// 获取临时事实
         /// </summary>
         /// <param name="transactNo"></param>
         /// <param name="opIDs"></param>
         /// <returns></returns>
-        //public virtual List<FactEntity> GetTempFactList(long transactNo, params int[] opIDs)
-        //{
-        //    long[] fPKArray = GetTempFactPKList(opIDs);
-        //    return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.TransactNo == transactNo).ToList();
-        //}
-
+        public virtual List<FactEntity> GetTempFactList(long transactNo, params int[] opIDs)
+        {
+            long[] fPKArray = GetTempFactPKList(opIDs);
+            return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.TransactNo == transactNo).ToList();
+        }
+       
         /// <summary>
         /// 根据正则表达式获取事实表
         /// </summary>
         /// <param name="where"></param>
         /// <returns></returns>
-        //public virtual List<FactEntity> GetTempFactList(Expression<Func<FactEntity, bool> > where )
-        //{
-        //    return _db.Set<FactEntity>().Where(where).ToList();
-        //}
+        public virtual List<FactEntity> GetTempFactList(Expression<Func<FactEntity, bool> > where )
+        {
+            return _db.Set<FactEntity>().Where(where).ToList();
+        }
         /// <summary>
         /// 根据LinkFactID获取
         /// </summary>
         /// <param name="linkFactID"></param>
         /// <param name="opIDs"></param>
         /// <returns></returns>
-        //public virtual List<FactEntity> GetTempFactListByLinkFactID(long linkFactID, int[] opIDs)
-        //{
-        //    long[] fPKArray = GetTempFactPKList(opIDs);
-        //    return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.LinkedFactID == linkFactID).ToList();
-        //}
+        public virtual List<FactEntity> GetTempFactListByLinkFactID(long linkFactID, int[] opIDs)
+        {
+            long[] fPKArray = GetTempFactPKList(opIDs);
+            return _db.Set<FactEntity>().Where(c => fPKArray.Contains(c.PartitioningKey )  && opIDs.Contains(c.OpID) && c.LinkedFactID == linkFactID).ToList();
+        }
         /// <summary>
         /// 保存辅助事实
         /// </summary>
@@ -335,7 +329,7 @@ namespace IRAPBase
         public virtual IRAPError UnCheckTransact(long transactNo, bool deleteFact = true)
         {
 
-            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitionPolicy == TransPK && c.TransactNo == transactNo);
+            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
 
             if (t1 == null)
             {
@@ -346,12 +340,12 @@ namespace IRAPBase
             t1.OkayTime = null;
             if (deleteFact)
             {
-                //IDbSet<FactEntity> tempFactList = _db.Set<FactEntity>();
-                //var list = tempFactList.Where(c => c.TransactNo == t1.TransactNo && c.PartitioningKey == TempFactPK);
-                //foreach (FactEntity r in list)
-                //{
-                //    tempFactList.Remove(r);
-                //}
+                IDbSet<FactEntity> tempFactList = _db.Set<FactEntity>();
+                var list = tempFactList.Where(c => c.TransactNo == t1.TransactNo && c.PartitioningKey == TempFactPK);
+                foreach (FactEntity r in list)
+                {
+                    tempFactList.Remove(r);
+                }
             }
             SaveChanges();
             return new IRAPError(0, "交易撤销成功！");
@@ -366,7 +360,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPError CheckTransact(long transactNo)
         {
-            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitionPolicy == TransPK && c.TransactNo == transactNo);
+            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
 
             if (t1 == null)
             {
@@ -385,7 +379,7 @@ namespace IRAPBase
         /// <returns></returns>
         public IRAPError DeleteToRecycle(long transactNo)
         {
-            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitionPolicy == TransPK && c.TransactNo == transactNo);
+            TransactEntity t1 = GetEntities<TransactEntity>().FirstOrDefault(c => c.PartitioningKey == TransPK && c.TransactNo == transactNo);
 
             if (t1 == null)
             {
@@ -399,22 +393,22 @@ namespace IRAPBase
             t1.RevokeTime = DateTime.Now;
             t1.Status = 4;
             //移动到Recycle
-            //var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.TransactNo == transactNo);
+            var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.TransactNo == transactNo);
 
-            //int i = 0;
-            //foreach (var r in list)
-            //{
-            //    RecycleFactEntity t2 = new RecycleFactEntity();
-            //    r.CopyTo(t2);
-            //    t2.Remark = t2.Remark + "[撤销]";
-            //    _db.Set<RecycleFactEntity>().Add(t2);
-            //    _db.Set<FactEntity>().Remove(r);
-            //    i++;
-            //}
-            //if (i == 0)
-            //{
-            //    return new IRAPError(11, "交易没有对应的事实记录！");
-            //}
+            int i = 0;
+            foreach (var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[撤销]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i == 0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
             SaveChanges();
             return new IRAPError(0, "交易撤销成功！");
         }
@@ -427,21 +421,21 @@ namespace IRAPBase
         {
 
             //移动到Recycle
-            //var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.FactID == factID);
-            //int i = 0;
-            //foreach (var r in list)
-            //{
-            //    RecycleFactEntity t2 = new RecycleFactEntity();
-            //    r.CopyTo(t2);
-            //    t2.Remark = t2.Remark + "[删除]";
-            //    _db.Set<RecycleFactEntity>().Add(t2);
-            //    _db.Set<FactEntity>().Remove(r);
-            //    i++;
-            //}
-            //if (i == 0)
-            //{
-            //    return new IRAPError(11, "交易没有对应的事实记录！");
-            //}
+            var list = GetEntities<FactEntity>().Where(c => c.PartitioningKey == TempFactPK && c.FactID == factID);
+            int i = 0;
+            foreach (var r in list)
+            {
+                RecycleFactEntity t2 = new RecycleFactEntity();
+                r.CopyTo(t2);
+                t2.Remark = t2.Remark + "[删除]";
+                _db.Set<RecycleFactEntity>().Add(t2);
+                _db.Set<FactEntity>().Remove(r);
+                i++;
+            }
+            if (i == 0)
+            {
+                return new IRAPError(11, "交易没有对应的事实记录！");
+            }
             SaveChanges();
             return new IRAPError(0, "事实删除成功！");
         }
@@ -511,7 +505,7 @@ namespace IRAPBase
         public static TransactEntity GetTransact(IDbContext db, int communityID, long transactNo)
         {
             long[] dict = new long[] { GetTransPK(communityID, DateTime.Now.Year), GetTransPK(communityID, DateTime.Now.Year - 1) };
-            return db.Set<TransactEntity>().FirstOrDefault(c => dict.Contains(c.PartitionPolicy) && c.TransactNo == transactNo);
+            return db.Set<TransactEntity>().FirstOrDefault(c => dict.Contains(c.PartitioningKey) && c.TransactNo == transactNo);
         }
 
         /// <summary>
@@ -523,7 +517,7 @@ namespace IRAPBase
         public static IQueryable<TransactEntity> GetTransactList(IDbContext db, int communityID)
         {
             long[] dict = new long[] { GetTransPK(communityID, DateTime.Now.Year), GetTransPK(communityID, DateTime.Now.Year - 1) };
-            return db.Set<TransactEntity>().Where(c => dict.Contains(c.PartitionPolicy));
+            return db.Set<TransactEntity>().Where(c => dict.Contains(c.PartitioningKey));
         }
         //查询辅助事实
         //查询行集事实

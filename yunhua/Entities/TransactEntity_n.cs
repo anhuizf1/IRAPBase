@@ -33,9 +33,9 @@ namespace IRAPBase.Entities
         /// </summary>
         public long TransactNo { get; set; }
         /// <summary>
-        /// 分区键（IRAPMES为PartitioningKey）
+        /// 分区键
         /// </summary>
-        public long PartitionPolicy { get; set; }
+        public long PartitioningKey { get; set; }
         /// <summary>
         /// 操作时间
         /// </summary>
@@ -130,7 +130,7 @@ namespace IRAPBase.Entities
         {
             //表定义
             // ToTable("stb006");
-            HasKey(t => new { t.PartitionPolicy, t.TransactNo });
+            HasKey(t => new { t.PartitioningKey, t.TransactNo });
             Property(t => t.Operator).IsRequired();
             Property(t => t.OperTime).IsRequired();
             //   Property(p => p.LanguageID).HasColumnType("smallint");
