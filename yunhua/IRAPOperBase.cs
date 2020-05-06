@@ -176,7 +176,7 @@ namespace IRAPBase
                     OpNodes = _opID.ToString(),
                     PartitioningKey = TransPK,
                     StationID = log.StationID,
-                    Status = 1,
+                    Status = 0,
                     Remark = remark,
                     TransactNo = transactNo,
                     VoucherNo = voucherNo
